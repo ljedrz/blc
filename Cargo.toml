@@ -1,10 +1,10 @@
 [package]
 name = "blc"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["ljedrz <ljedrz@gmail.com>"]
 description = "An implementation of the binary lambda calculus"
 repository = "https://github.com/ljedrz/blc"
-documentation = "https://ljedrz.github.io/blc/doc/blc/index.html"
+documentation = "https://docs.rs/blc"
 readme = "README.md"
 license = "CC0-1.0"
 keywords = ["lambda", "calculus", "church", "functional", "binary"]
