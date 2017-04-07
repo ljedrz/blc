@@ -1,0 +1,14 @@
+[package]
+name = "blc"
+version = "0.1.0"
+authors = ["ljedrz <ljedrz@gmail.com>"]
+repository = "https://github.com/ljedrz/blc"
+#documentation = "https://ljedrz.github.io/blc/doc/blc/index.html"
+readme = "README.md"
+license = "CC0-1.0"
+keywords = ["lambda", "calculus", "church", "functional", "binary"]
+categories = ["encoding"]
+exclude = [".cargo/*"]
+
+[dependencies]
+lambda_calculus = "0.1.4"
