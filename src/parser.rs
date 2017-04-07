@@ -57,9 +57,9 @@ mod test {
 
 	#[test]
 	fn abstractions() {
-		assert_eq!(parse(b"00\t10"), abs(Var(1)));
-		assert_eq!(parse(b"00\n00\r\n10"), abs(abs(Var(1))));
-		assert_eq!(parse(b"00 00	00\n10"), abs(abs(abs((Var(1))))));
+		assert_eq!(parse(b"0010"), abs(Var(1)));
+		assert_eq!(parse(b"000010"), abs(abs(Var(1))));
+		assert_eq!(parse(b"00000010"), abs(abs(abs((Var(1))))));
 	}
 
 	#[test]
@@ -67,6 +67,11 @@ mod test {
 		assert_eq!(parse(b"011010"), app(Var(1), Var(1)));
 		assert_eq!(parse(b"0110110"), app(Var(1), Var(2)));
 		assert_eq!(parse(b"0111010"), app(Var(2), Var(1)));
+	}
+
+	#[test]
+	fn ignoring_whitespaces() {
+		assert_eq!(parse(b"00 00\t00\n10\r\n"), abs(abs(abs((Var(1))))));
 	}
 
 	#[test]
