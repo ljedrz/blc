@@ -1,7 +1,7 @@
 # blc
 **blc** is an implementation of the binary lambda calculus.
 
-## [Documentation](https://github.com/ljedrz/ljedrz.github.io/tree/master/blc/doc/blc/index.html)
+## [Documentation](https://ljedrz.github.io/blc/doc/blc/index.html)
 
 ## Status
 
