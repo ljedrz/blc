@@ -2,5 +2,5 @@
 
 extern crate lambda_calculus;
 
-pub mod parser;
-pub mod encoding;
+pub mod lambda_encoding;
+pub mod binary_encoding;
