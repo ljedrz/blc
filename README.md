@@ -6,10 +6,9 @@
 
 ## Status
 
-The parser and lambda encoding are already working, but the library is still a work in progress.
+Encoding and decoding is already working, but the library is still a work in progress.
 
-## Roadmap
+## TODO
 
-- a binary encoding for lambda `Term`s
 - more documentation
 - more tests
