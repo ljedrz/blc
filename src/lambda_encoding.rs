@@ -14,7 +14,8 @@ use std::char;
 ///
 /// let k = from_binary(b"0000110");
 ///
-/// assert_eq!(decode(k), "(λλ2)");
+/// assert!(k.is_ok());
+/// assert_eq!(decode(k.unwrap()), "(λλ2)");
 /// ```
 pub fn decode(term: Term) -> String {
 	if term == fls() {
@@ -47,10 +48,7 @@ fn encode_byte(b: u8) -> Term {
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::from_binary;
 /// use blc::lambda_encoding::encode;
-///
-/// let k = from_binary(b"0000110");
 ///
 /// assert_eq!(&*format!("{}", encode(b"a")), "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
 /// ```
@@ -83,9 +81,9 @@ mod test {
 
 	#[test]
 	fn decoding() {
-		let k = 	from_binary(b"0000110");
-		let s = 	from_binary(b"00000001011110100111010");
-		let quine = from_binary(b"000101100100011010000000000001011011110010111100111111011111011010");
+		let k = 	from_binary(b"0000110").unwrap();
+		let s = 	from_binary(b"00000001011110100111010").unwrap();
+		let quine = from_binary(b"000101100100011010000000000001011011110010111100111111011111011010").unwrap();
 
 		assert_eq!(decode(k),	  "(λλ2)");
 		assert_eq!(decode(s),	  "(λλλ31(21))");
@@ -102,7 +100,7 @@ mod test {
 
 	#[test]
 	fn encoding_binary() {
-		let s = from_binary(b"00000001011110100111010");
+		let s = from_binary(b"00000001011110100111010").unwrap();
 
 		assert_eq!(to_binary(&s), "00000001011110100111010".to_owned())
 	}
