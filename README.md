@@ -1,14 +1,14 @@
 # blc
 
-**blc** is an implementation of the binary lambda calculus.
+**blc** is an implementation of the
+[binary lambda calculus](https://esolangs.org/wiki/Binary_lambda_calculus).
 
 ## [Documentation](https://docs.rs/blc)
 
 ## Status
 
-Encoding and decoding is already working, but the library is still a work in progress.
+The library is already usable, but it is still a work in progress.
 
 ## TODO
 
-- more documentation
-- more tests
+- better documentation

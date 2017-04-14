@@ -4,6 +4,7 @@ use lambda_calculus::term::*;
 use lambda_calculus::term::Term::*;
 use self::Error::*;
 
+/// An error that can occur if the input stream of "bits" is no valid binary lambda calculus.
 #[derive(Debug, PartialEq)]
 pub enum Error {
     NotATerm
@@ -102,8 +103,8 @@ fn _to_binary(term: &Term, output: &mut Vec<u8>) {
     }
 }
 
-/// Convert a stream of "bits" into bytes. It is not ideally reversible with `decompress`, because
-/// it always produces full bytes, while the length of its input can be indivisible by 8.
+/// Convert a stream of "bits" into bytes. It is not always reversible with `decompress`, because
+/// it produces full bytes, while the length of its input can be indivisible by 8.
 ///
 /// # Example
 /// ```
