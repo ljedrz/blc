@@ -9,6 +9,25 @@ pub enum Error {
     NotATerm
 }
 
+/// Parse a binary-encoded lambda `Term`.
+///
+/// # Example
+/// ```
+/// use blc::binary_encoding::{from_binary, to_binary};
+///
+/// let k = from_binary(b"0000110");
+///
+/// assert!(k.is_ok());
+/// assert_eq!(to_binary(&k.unwrap()), Vec::from(&b"0000110"[..]));
+/// ```
+pub fn from_binary(input: &[u8]) -> Result<Term, Error> {
+    if let Some((result, _)) = _from_binary(input) {
+        Ok(result)
+    } else {
+        Err(NotATerm)
+    }
+}
+
 fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
     if input.len() == 0 { return None }
 
@@ -44,25 +63,6 @@ fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
             },
             _ => None
         }
-    }
-}
-
-/// Parse a binary-encoded lambda `Term`.
-///
-/// # Example
-/// ```
-/// use blc::binary_encoding::{from_binary, to_binary};
-///
-/// let k = from_binary(b"0000110");
-///
-/// assert!(k.is_ok());
-/// assert_eq!(to_binary(&k.unwrap()), Vec::from(&b"0000110"[..]));
-/// ```
-pub fn from_binary(input: &[u8]) -> Result<Term, Error> {
-    if let Some((result, _)) = _from_binary(input) {
-        Ok(result)
-    } else {
-        Err(NotATerm)
     }
 }
 
@@ -102,9 +102,68 @@ fn _to_binary(term: &Term, output: &mut Vec<u8>) {
     }
 }
 
+/// Convert a stream of "bits" into bytes.
+///
+/// # Example
+/// ```
+/// use blc::binary_encoding::{compress};
+///
+/// let succ_c = compress(&*b"000000011100101111011010");
+/// assert_eq!(succ_c, vec![0x1, 0xCB, 0xDA]);
+/// ```
+pub fn compress(binary: &[u8]) -> Vec<u8> {
+    let length = binary.len();
+    let mut output = Vec::with_capacity(length / 8 + 1);
+    let mut pos = 0;
+
+    while pos <= length - 8 {
+        output.push(bits_to_byte(&binary[pos..(pos + 8)]));
+        pos += 8;
+    }
+
+    if pos != length {
+        let mut last_byte = Vec::with_capacity(8);
+        last_byte.extend_from_slice(&binary[pos..]);
+        for _ in 0..(8 - (length - pos)) { last_byte.push(b'0') }
+        output.push(bits_to_byte(&last_byte));
+    }
+
+    output
+}
+
+fn bits_to_byte(bits: &[u8]) -> u8 {
+    bits.iter().fold(0, |acc, &b| acc * 2 + (b - 48))
+}
+
+/*
+// decompress
+pub fn decompress(bytes: &[u8]) -> Vec<u8> {
+    let mut output = Vec::with_capacity(bytes.len() * 8);
+
+    for byte in bytes {
+        output.extend_from_slice(format!("{:b}", byte).as_bytes());
+    }
+
+    output
+}
+*/
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    const QUINE: &'static [u8; 66] =
+        b"000101100100011010000000000001011011110010111100111111011111011010";
+
+    const PRIMES: &'static [u8; 167] =
+        b"00010001100110010100011010000000010110000010010001010111110111101001000110100001\
+          11001101000000000010110111001110011111110111100000000111110011011100000010110000\
+          0110110";
+
+    const BLC: &'static [u8; 232] =
+        b"01010001101000000001010110000000000111100001011111100111100001011100111100000011\
+          11000010110110111001111100001111100001011110100111010010110011100001101100001011\
+          111000011111000011100110111101111100111101110110000110010001101000011010";
 
     #[test]
     fn variables() {
@@ -139,24 +198,35 @@ mod test {
         let s =    b"00000001011110100111010";
         let succ = b"000000011100101111011010";
 
-        let quine = Vec::from(&
-            b"000101100100011010000000000001011011110010111100111111011111011010"[..]);
-        let primes = Vec::from(&
-            b"000100011001100101000110100000000101100000100100010101111101111010010001101\
-              000011100110100000000001011011100111001111111011110000000011111001101110000\
-              00101100000110110"[..]);
-        let blc = Vec::from(&
-            b"010100011010000000010101100000000001111000010111111001111000010111001111000\
-              000111100001011011011100111110000111110000101111010011101001011001110000110\
-              110000101111100001111100001110011011110111110011110111011000011001000110100\
-              0011010"[..]);
-
         assert_eq!(to_binary(&from_binary(&*k).unwrap()),      k);
         assert_eq!(to_binary(&from_binary(&*v15).unwrap()),    v15);
         assert_eq!(to_binary(&from_binary(&*s).unwrap()),      s);
         assert_eq!(to_binary(&from_binary(&*succ).unwrap()),   succ);
-        assert_eq!(to_binary(&from_binary(&*quine).unwrap()),  quine);
-        assert_eq!(to_binary(&from_binary(&*primes).unwrap()), primes);
-        assert_eq!(to_binary(&from_binary(&*blc).unwrap()),    blc);
+        assert_eq!(to_binary(&from_binary(&*QUINE).unwrap()),  &QUINE[..]);
+        assert_eq!(to_binary(&from_binary(&*PRIMES).unwrap()), Vec::from(&PRIMES[..]));
+        assert_eq!(to_binary(&from_binary(&*BLC).unwrap()),    Vec::from(&BLC[..]));
     }
+
+    #[test]
+    fn compression() {
+        let primes_c = compress(&PRIMES[..]);
+        assert_eq!(primes_c.first().unwrap(), &0x11);
+        assert_eq!(primes_c.last().unwrap(),  &0x6c);
+
+        let blc_c = compress(&BLC[..]);
+        assert_eq!(blc_c.first().unwrap(), &0x51);
+        assert_eq!(blc_c.last().unwrap(),  &0x1a);
+    }
+/*
+    #[test]
+    fn compress_decompress() {
+        let v15 =  b"1111111111111110";
+        let s =    b"00000001011110100111010";
+        let succ = b"000000011100101111011010";
+
+        assert_eq!(decompress(&compress(v15)), v15);
+        assert_eq!(decompress(&compress(s)), s);
+        assert_eq!(decompress(&compress(succ)), succ);
+    }
+*/
 }
