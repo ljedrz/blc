@@ -1,8 +1,8 @@
 [package]
 name = "blc"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["ljedrz <ljedrz@gmail.com>"]
-description = "An implementation of the binary lambda calculus"
+description = "An implementation of the binary lambda calculus."
 repository = "https://github.com/ljedrz/blc"
 documentation = "https://docs.rs/blc"
 readme = "README.md"

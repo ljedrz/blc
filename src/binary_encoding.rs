@@ -150,7 +150,6 @@ pub fn decompress(bytes: &[u8]) -> Vec<u8> {
     let mut output = Vec::with_capacity(bytes.len() * 8);
 
     for byte in bytes {
-        println!("byte {:x} = {:08b}", byte, byte);
         output.extend_from_slice(format!("{:08b}", byte.to_be()).as_bytes());
     }
 
@@ -237,5 +236,4 @@ mod test {
     fn compress_decompress() {
         assert_eq!(decompress(&compress(&BLC[..])), Vec::from(&BLC[..]));
     }
-
 }
