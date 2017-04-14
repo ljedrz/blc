@@ -102,14 +102,15 @@ fn _to_binary(term: &Term, output: &mut Vec<u8>) {
     }
 }
 
-/// Convert a stream of "bits" into bytes.
+/// Convert a stream of "bits" into bytes. It is not ideally reversible with `decompress`, because
+/// it always produces full bytes, while the length of its input can be indivisible by 8.
 ///
 /// # Example
 /// ```
 /// use blc::binary_encoding::{compress};
 ///
-/// let succ_c = compress(&*b"000000011100101111011010");
-/// assert_eq!(succ_c, vec![0x1, 0xCB, 0xDA]);
+/// let succ_compressed = compress(&*b"000000011100101111011010");
+/// assert_eq!(succ_compressed, vec![0x1, 0xCB, 0xDA]);
 /// ```
 pub fn compress(binary: &[u8]) -> Vec<u8> {
     let length = binary.len();
@@ -135,18 +136,25 @@ fn bits_to_byte(bits: &[u8]) -> u8 {
     bits.iter().fold(0, |acc, &b| acc * 2 + (b - 48))
 }
 
-/*
-// decompress
+/// Convert bytes into "bits" suitable for binary lambda calculus purposes.
+///
+/// # Example
+/// ```
+/// use blc::binary_encoding::{decompress};
+///
+/// let succ_compressed = vec![0x1, 0xCB, 0xDA];
+/// assert_eq!(decompress(&succ_compressed), b"000000011100101111011010");
+/// ```
 pub fn decompress(bytes: &[u8]) -> Vec<u8> {
     let mut output = Vec::with_capacity(bytes.len() * 8);
 
     for byte in bytes {
-        output.extend_from_slice(format!("{:b}", byte).as_bytes());
+        println!("byte {:x} = {:08b}", byte, byte);
+        output.extend_from_slice(format!("{:08b}", byte.to_be()).as_bytes());
     }
 
     output
 }
-*/
 
 #[cfg(test)]
 mod test {
@@ -217,16 +225,16 @@ mod test {
         assert_eq!(blc_c.first().unwrap(), &0x51);
         assert_eq!(blc_c.last().unwrap(),  &0x1a);
     }
-/*
+
+    #[test]
+    fn decompression() {
+        let s_c = vec![0x1, 0x7a, 0x74];
+        assert_eq!(compress(&decompress(&s_c)), s_c);
+    }
+
     #[test]
     fn compress_decompress() {
-        let v15 =  b"1111111111111110";
-        let s =    b"00000001011110100111010";
-        let succ = b"000000011100101111011010";
-
-        assert_eq!(decompress(&compress(v15)), v15);
-        assert_eq!(decompress(&compress(s)), s);
-        assert_eq!(decompress(&compress(succ)), succ);
+        assert_eq!(decompress(&compress(&BLC[..])), Vec::from(&BLC[..]));
     }
-*/
+
 }
