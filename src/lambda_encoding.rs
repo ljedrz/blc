@@ -67,7 +67,7 @@ pub fn encode(input: &[u8]) -> Term {
 #[cfg(test)]
 mod test {
     use super::*;
-    use binary_encoding::{from_binary, to_binary};
+    use binary_encoding::from_binary;
     use std::str;
 
     #[test]
@@ -111,12 +111,5 @@ mod test {
         assert_eq!(decode(encode(b"0111010101011")),         "0111010101011");
         assert_eq!(decode(encode(b"01zeros110and1ones101")), "01zeros110and1ones101");
         assert_eq!(decode(encode(b"\0(1)")),                 "\0(1)");
-    }
-
-    #[test]
-    fn encoding_binary() {
-        let s = from_binary(b"00000001011110100111010").unwrap();
-
-        assert_eq!(to_binary(&s), "00000001011110100111010".to_owned())
     }
 }

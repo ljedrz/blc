@@ -3,7 +3,6 @@
 use lambda_calculus::term::*;
 use lambda_calculus::term::Term::*;
 use self::Error::*;
-use std::str::from_utf8;
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
@@ -78,12 +77,30 @@ pub fn from_binary(input: &[u8]) -> Result<Term, Error> {
 /// assert!(k.is_ok());
 /// assert_eq!(to_binary(&k.unwrap()), "0000110".to_owned());
 /// ```
-pub fn to_binary(term: &Term) -> String {
+
+fn _to_binary(term: &Term, output: &mut Vec<u8>) {
     match *term {
-        Var(i) => format!("{}0", "1".repeat(i)),
-        Abs(ref t) => format!("00{}", to_binary(t)),
-        App(ref t1, ref t2) => format!("01{}{}", to_binary(t1), to_binary(t2))
+        Var(i) => {
+            for _ in 0..i { output.push(b'1') }
+            output.push(b'0');
+        }
+        Abs(ref t) => {
+            output.extend_from_slice(b"00");
+            output.append(&mut to_binary(t));
+        }
+        App(ref t1, ref t2) => {
+            output.extend_from_slice(b"01");
+            output.append(&mut to_binary(t1));
+            output.append(&mut to_binary(t2));
+        }
     }
+}
+
+pub fn to_binary(term: &Term) -> Vec<u8> {
+    let mut output = Vec::new();
+    _to_binary(term, &mut output);
+
+    output
 }
 
 #[cfg(test)]
@@ -118,25 +135,29 @@ mod test {
 
     #[test]
     fn from_binary_and_back() {
-        let k =      b"0000110";
-        let v15 =    b"1111111111111110";
-        let s =      b"00000001011110100111010";
-        let succ =   b"000000011100101111011010";
-        let quine =  b"000101100100011010000000000001011011110010111100111111011111011010";
-        let primes = b"000100011001100101000110100000000101100000100100010101111101111010010001101\
-                       000011100110100000000001011011100111001111111011110000000011111001101110000\
-                       00101100000110110";
-        let blc =    b"010100011010000000010101100000000001111000010111111001111000010111001111000\
-                       000111100001011011011100111110000111110000101111010011101001011001110000110\
-                       110000101111100001111100001110011011110111110011110111011000011001000110100\
-                       0011010";
+        let k =    b"0000110";
+        let v15 =  b"1111111111111110";
+        let s =    b"00000001011110100111010";
+        let succ = b"000000011100101111011010";
 
-        assert_eq!(to_binary(&from_binary(&*k).unwrap()).as_bytes(),    k);
-        assert_eq!(to_binary(&from_binary(&*v15).unwrap()).as_bytes(),  v15);
-        assert_eq!(to_binary(&from_binary(&*s).unwrap()).as_bytes(),    s);
-        assert_eq!(to_binary(&from_binary(&*succ).unwrap()).as_bytes(), succ);
-        assert_eq!(to_binary(&from_binary(&*quine).unwrap()),           from_utf8(quine).unwrap());
-        assert_eq!(to_binary(&from_binary(&*primes).unwrap()),          from_utf8(primes).unwrap());
-        assert_eq!(to_binary(&from_binary(&*blc).unwrap()),             from_utf8(blc).unwrap());
+        let quine = Vec::from(&
+            b"000101100100011010000000000001011011110010111100111111011111011010"[..]);
+        let primes = Vec::from(&
+            b"000100011001100101000110100000000101100000100100010101111101111010010001101\
+              000011100110100000000001011011100111001111111011110000000011111001101110000\
+              00101100000110110"[..]);
+        let blc = Vec::from(&
+            b"010100011010000000010101100000000001111000010111111001111000010111001111000\
+              000111100001011011011100111110000111110000101111010011101001011001110000110\
+              110000101111100001111100001110011011110111110011110111011000011001000110100\
+              0011010"[..]);
+
+        assert_eq!(to_binary(&from_binary(&*k).unwrap()),      k);
+        assert_eq!(to_binary(&from_binary(&*v15).unwrap()),    v15);
+        assert_eq!(to_binary(&from_binary(&*s).unwrap()),      s);
+        assert_eq!(to_binary(&from_binary(&*succ).unwrap()),   succ);
+        assert_eq!(to_binary(&from_binary(&*quine).unwrap()),  quine);
+        assert_eq!(to_binary(&from_binary(&*primes).unwrap()), primes);
+        assert_eq!(to_binary(&from_binary(&*blc).unwrap()),    blc);
     }
 }
