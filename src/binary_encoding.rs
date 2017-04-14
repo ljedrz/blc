@@ -3,6 +3,7 @@
 use lambda_calculus::term::*;
 use lambda_calculus::term::Term::*;
 use self::Error::*;
+use std::str::from_utf8;
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
@@ -116,7 +117,7 @@ mod test {
     }
 
     #[test]
-    fn parse_and_display() {
+    fn from_binary_and_back() {
         let k =      b"0000110";
         let v15 =    b"1111111111111110";
         let s =      b"00000001011110100111010";
@@ -130,14 +131,12 @@ mod test {
                        110000101111100001111100001110011011110111110011110111011000011001000110100\
                        0011010";
 
-        assert_eq!(format!("{}", from_binary(&*k).unwrap()),      "λλ2");
-        assert_eq!(format!("{}", from_binary(&*v15).unwrap()),    "F");
-        assert_eq!(format!("{}", from_binary(&*s).unwrap()),      "λλλ31(21)");
-        assert_eq!(format!("{}", from_binary(&*succ).unwrap()),   "λλλ2(321)");
-        assert_eq!(format!("{}", from_binary(&*quine).unwrap()),  "λ1((λ11)(λλλλλ14(3(55)2)))1");
-        assert_eq!(format!("{}", from_binary(&*primes).unwrap()), "λ(λ1(1((λ11)(λλλ1(λλ1)((λ441((λ\
-            11)(λ2(11))))(λλλλ13(2(64)))))(λλλ4(13)))))(λλ1(λλ2)2)");
-        assert_eq!(format!("{}", from_binary(&*blc).unwrap()),    "(λ11)(λλλ1(λλλλ3(λ5(3(λ2(3(λλ3(\
-            λ123)))(4(λ4(λ31(21))))))(1(2(λ12))(λ4(λ4(λ2(14)))5))))(33)2)(λ1((λ11)(λ11)))");
+        assert_eq!(to_binary(&from_binary(&*k).unwrap()).as_bytes(),    k);
+        assert_eq!(to_binary(&from_binary(&*v15).unwrap()).as_bytes(),  v15);
+        assert_eq!(to_binary(&from_binary(&*s).unwrap()).as_bytes(),    s);
+        assert_eq!(to_binary(&from_binary(&*succ).unwrap()).as_bytes(), succ);
+        assert_eq!(to_binary(&from_binary(&*quine).unwrap()),           from_utf8(quine).unwrap());
+        assert_eq!(to_binary(&from_binary(&*primes).unwrap()),          from_utf8(primes).unwrap());
+        assert_eq!(to_binary(&from_binary(&*blc).unwrap()),             from_utf8(blc).unwrap());
     }
 }
