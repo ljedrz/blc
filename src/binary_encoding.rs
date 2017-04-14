@@ -77,6 +77,12 @@ pub fn from_binary(input: &[u8]) -> Result<Term, Error> {
 /// assert!(k.is_ok());
 /// assert_eq!(to_binary(&k.unwrap()), "0000110".to_owned());
 /// ```
+pub fn to_binary(term: &Term) -> Vec<u8> {
+    let mut output = Vec::new();
+    _to_binary(term, &mut output);
+
+    output
+}
 
 fn _to_binary(term: &Term, output: &mut Vec<u8>) {
     match *term {
@@ -94,13 +100,6 @@ fn _to_binary(term: &Term, output: &mut Vec<u8>) {
             output.append(&mut to_binary(t2));
         }
     }
-}
-
-pub fn to_binary(term: &Term) -> Vec<u8> {
-    let mut output = Vec::new();
-    _to_binary(term, &mut output);
-
-    output
 }
 
 #[cfg(test)]
