@@ -23,7 +23,14 @@ pub fn decode(term: Term) -> String {
     } else if term.is_list() && term.head_ref().unwrap().is_list() {
         let (head, tail) = term.uncons().unwrap();
         let terms: Vec<Term> = head.into_iter().collect();
-        let bits = terms.into_iter().map(|t| (t.unabs().and_then(|t| t.unabs()).and_then(|t| t.unvar()).unwrap() - 1) as u8).collect::<Vec<u8>>();
+        let bits = terms
+                   .into_iter()
+                   .map(|t| (t
+                            .unabs()
+                            .and_then(|t| t.unabs())
+                            .and_then(|t| t.unvar())
+                            .unwrap() - 1) as u8
+                    ).collect::<Vec<u8>>();
         let byte = !bits.iter().fold(0, |acc, &b| acc * 2 + b);
         let chr = char::from(byte);
         chr.to_string() + &decode(tail)
@@ -44,13 +51,14 @@ fn encode_byte(b: u8) -> Term {
     }
 }
 
-/// Encode a byte stream as a lambda `Term`.
+/// Encode bytes as a lambda `Term`.
 ///
 /// # Example
 /// ```
 /// use blc::lambda_encoding::encode;
 ///
-/// assert_eq!(&*format!("{}", encode(b"a")), "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
+/// assert_eq!(&*format!("{}", encode(b"a")),
+///     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
 /// ```
 pub fn encode(input: &[u8]) -> Term {
     input.iter().rev().fold(nil(), |acc, &b| acc.push(encode_byte(b)))
@@ -72,18 +80,25 @@ mod test {
         assert_eq!(&*format!("{}", encode(b"11")),    "λ1(λλ1)(λ1(λλ1)(λλ1))");
         assert_eq!(&*format!("{}", encode(b"001")),   "λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))");
         assert_eq!(&*format!("{}", encode(b"100")),   "λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λλ1)))");
-        assert_eq!(&*format!("{}", encode(b"a")),     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
-        assert_eq!(&*format!("{}", encode(b"z0")),    "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λλ1)))))))))(λ1(λλ2)(λλ1))");
-        assert_eq!(&*format!("{}", encode(b"\0(1)")), "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))\
-                                                      (λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))\
-                                                      (λ1(λλ1)(λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1))))");
+        assert_eq!(&*format!("{}", encode(b"a")),     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)\
+                                                       (λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
+        assert_eq!(&*format!("{}", encode(b"z0")),    "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ1)(λ1(λλ1)\
+                                                       (λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λλ1)))))))))(λ1(λλ\
+                                                       2)(λλ1))");
+        assert_eq!(&*format!("{}", encode(b"\0(1)")), "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(\
+                                                       λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))(λ1(λ1(\
+                                                       λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2\
+                                                       )(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))(λ1(λλ1)(λ1(λ\
+                                                       1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λ1(λλ1)(λ1(λ\
+                                                       λ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1))))");
     }
 
     #[test]
     fn decoding() {
         let k =     from_binary(b"0000110").unwrap();
         let s =     from_binary(b"00000001011110100111010").unwrap();
-        let quine = from_binary(b"000101100100011010000000000001011011110010111100111111011111011010").unwrap();
+        let quine = from_binary(b"000101100100011010000000000001011\
+                                  011110010111100111111011111011010").unwrap();
 
         assert_eq!(decode(k),     "(λλ2)");
         assert_eq!(decode(s),     "(λλλ31(21))");
