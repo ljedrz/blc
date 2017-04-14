@@ -56,7 +56,7 @@ fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
 /// let k = from_binary(b"0000110");
 ///
 /// assert!(k.is_ok());
-/// assert_eq!(to_binary(&k.unwrap()), "0000110".to_owned());
+/// assert_eq!(to_binary(&k.unwrap()), Vec::from(&b"0000110"[..]));
 /// ```
 pub fn from_binary(input: &[u8]) -> Result<Term, Error> {
     if let Some((result, _)) = _from_binary(input) {
@@ -75,7 +75,7 @@ pub fn from_binary(input: &[u8]) -> Result<Term, Error> {
 /// let k = from_binary(b"0000110");
 ///
 /// assert!(k.is_ok());
-/// assert_eq!(to_binary(&k.unwrap()), "0000110".to_owned());
+/// assert_eq!(to_binary(&k.unwrap()), Vec::from(&b"0000110"[..]));
 /// ```
 pub fn to_binary(term: &Term) -> Vec<u8> {
     let mut output = Vec::new();
