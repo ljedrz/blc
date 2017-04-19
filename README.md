@@ -12,4 +12,3 @@ The library is already usable, but it is still a work in progress.
 ## TODO
 
 - better documentation
-- BLC execution

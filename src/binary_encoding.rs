@@ -46,7 +46,7 @@ fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
             b"01" => {
                 if let Some((term1, rest1)) = _from_binary(&input[2..]) {
                     if let Some((term2, rest2)) = _from_binary(&rest1) {
-                        Some((term1.app(term2), &rest2))
+                        Some((app(term1, term2), &rest2))
                     } else {
                         None
                     }
@@ -189,9 +189,9 @@ mod test {
 
     #[test]
     fn applications() {
-        assert_eq!(from_binary(b"011010"),  Ok( Var(1).app(Var(1))) );
-        assert_eq!(from_binary(b"0110110"), Ok( Var(1).app(Var(2))) );
-        assert_eq!(from_binary(b"0111010"), Ok( Var(2).app(Var(1))) );
+        assert_eq!(from_binary(b"011010"),  Ok(app(Var(1), Var(1))));
+        assert_eq!(from_binary(b"0110110"), Ok(app(Var(1), Var(2))));
+        assert_eq!(from_binary(b"0111010"), Ok(app(Var(2), Var(1))));
     }
 
     #[test]
