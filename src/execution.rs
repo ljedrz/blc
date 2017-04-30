@@ -1,3 +1,5 @@
+//! Binary lambda calculus execution
+
 use binary_encoding::{from_binary};
 use lambda_encoding::{encode, decode};
 use lambda_calculus::reduction::beta_full;
