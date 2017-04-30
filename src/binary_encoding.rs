@@ -4,7 +4,7 @@ use lambda_calculus::term::*;
 use lambda_calculus::term::Term::*;
 use self::Error::*;
 
-/// An error that can occur if the input stream of "bits" is no valid binary lambda calculus.
+/// An error that can occur if the input stream of "bits" is not valid binary lambda calculus.
 #[derive(Debug, PartialEq)]
 pub enum Error {
     NotATerm
@@ -33,7 +33,7 @@ fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
     if input.len() == 0 { return None }
 
     if [9, 10, 13, 32].contains(&input[0]) {
-        _from_binary(&input[1..])
+        _from_binary(&input[1..]) // skip whitespaces
     } else {
         match &input[0..2] {
             b"00" => {
@@ -150,7 +150,7 @@ pub fn decompress(bytes: &[u8]) -> Vec<u8> {
     let mut output = Vec::with_capacity(bytes.len() * 8);
 
     for byte in bytes {
-        output.extend_from_slice(format!("{:08b}", byte.to_be()).as_bytes());
+        output.extend_from_slice(format!("{:08b}", byte).as_bytes());
     }
 
     output

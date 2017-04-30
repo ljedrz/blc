@@ -26,10 +26,10 @@ pub fn decode(term: Term) -> String {
         let bits = terms
                    .into_iter()
                    .map(|t| (t
-                            .unabs()
-                            .and_then(|t| t.unabs())
-                            .and_then(|t| t.unvar())
-                            .unwrap() - 1) as u8
+                        .unabs()
+                        .and_then(|t| t.unabs())
+                        .and_then(|t| t.unvar())
+                        .unwrap() - 1) as u8
                     ).collect::<Vec<u8>>();
         let byte = !bits.iter().fold(0, |acc, &b| acc * 2 + b);
         let chr = char::from(byte);
