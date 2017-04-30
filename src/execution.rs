@@ -10,7 +10,16 @@ pub enum Error {
 }
 
 /// Executes a binary lambda calculus program, feeding it the given argument.
-pub fn execute(blc_program: &[u8], blc_argument: &[u8]) -> Result<String, Error> {
+///
+/// # Example
+/// ```
+/// use blc::execution::run;
+///
+/// let reverse = b"0001011001000110100000000001011100111110111100001011011110110000010";
+///
+/// assert_eq!(run(&*reverse, b"herp derp"), Ok("pred preh".into()));
+/// ```
+pub fn run(blc_program: &[u8], blc_argument: &[u8]) -> Result<String, Error> {
     let program = from_binary(blc_program);
     if program.is_err() { return Err(InvalidProgram) }
     let calculation = beta_full(program.unwrap().app(encode(blc_argument))); // safe
@@ -30,9 +39,9 @@ mod test {
             00111100111100111100001011011000001000000101100000101100000010110000011011000000";
         let s_compressed = [0x1u8, 0x7a, 0x74];
         
-        assert_eq!(execute(&*inflate, &s_compressed[..]).unwrap(), "000000010111101001110100".to_owned());
+        assert_eq!(run(&*inflate, &s_compressed[..]).unwrap(), "000000010111101001110100".to_owned());
     }
-    
+  /*  
     #[test]
     fn deflating() {
         // program code from http://www.ioccc.org/2012/tromp/deflate.Blc
@@ -43,6 +52,6 @@ mod test {
             
         let s_blc = b"00000001011110100111010";
         
-        assert_eq!(execute(&*deflate, &s_blc[..]).unwrap().as_bytes(), [0x1u8, 0x7a, 0x74]);
-    }
+        assert_eq!(run(&*deflate, &s_blc[..]).unwrap().as_bytes(), [0x1u8, 0x7a, 0x74]);
+    }*/
 }
