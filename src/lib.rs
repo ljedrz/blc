@@ -5,3 +5,4 @@ extern crate lambda_calculus;
 
 pub mod lambda_encoding;
 pub mod binary_encoding;
+pub mod execution;
