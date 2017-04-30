@@ -21,16 +21,16 @@ pub fn decode(term: Term) -> String {
     if term == fls() {
         "".into()
     } else if term.is_list() && term.head_ref().unwrap().is_list() {
-        let (head, tail) = term.uncons().unwrap();
+        let (head, tail) = term.uncons().unwrap(); // safe ensured by is_list
         let terms: Vec<Term> = head.into_iter().collect();
         let bits = terms
-                   .into_iter()
-                   .map(|t| (t
-                        .unabs()
-                        .and_then(|t| t.unabs())
-                        .and_then(|t| t.unvar())
-                        .unwrap() - 1) as u8
-                    ).collect::<Vec<u8>>();
+            .into_iter()
+            .map(|t| (t
+                .unabs()
+                .and_then(|t| t.unabs())
+                .and_then(|t| t.unvar())
+                .unwrap() - 1) as u8
+            ).collect::<Vec<u8>>();
         let byte = !bits.iter().fold(0, |acc, &b| acc * 2 + b);
         let chr = char::from(byte);
         chr.to_string() + &decode(tail)
