@@ -21,7 +21,7 @@ pub fn decode(term: Term) -> String {
     if term == fls() {
         "".into()
     } else if term.is_list() && term.head_ref().unwrap().is_list() {
-        let (head, tail) = term.uncons().unwrap(); // safe ensured by is_list
+        let (head, tail) = term.uncons().unwrap(); // safe, ensured by is_list
         let terms: Vec<Term> = head.into_iter().collect();
         let bits = terms
             .into_iter()
@@ -43,11 +43,17 @@ pub fn decode(term: Term) -> String {
     }
 }
 
-fn encode_byte(b: u8) -> Term {
-    match b {
+fn encode_byte(byte: u8) -> Term {
+    let bitstr = format!("{:08b}", byte);
+    let bits = bitstr.as_bytes();
+    Term::from(bits.into_iter().map(|&bit| encode_bit(bit)).collect::<Vec<Term>>())
+}
+
+fn encode_bit(bit: u8) -> Term {
+    match bit {
         b'0' => tru(),
         b'1' => fls(),
-        x    => encode(&format!("{:08b}", x).as_bytes())
+        _ => unreachable!()
     }
 }
 
@@ -72,25 +78,12 @@ mod test {
 
     #[test]
     fn encoding_lambda() {
-        assert_eq!(&*format!("{}", encode(b"0")),     "λ1(λλ2)(λλ1)");
-        assert_eq!(&*format!("{}", encode(b"1")),     "λ1(λλ1)(λλ1)");
-        assert_eq!(&*format!("{}", encode(b"00")),    "λ1(λλ2)(λ1(λλ2)(λλ1))");
-        assert_eq!(&*format!("{}", encode(b"01")),    "λ1(λλ2)(λ1(λλ1)(λλ1))");
-        assert_eq!(&*format!("{}", encode(b"10")),    "λ1(λλ1)(λ1(λλ2)(λλ1))");
-        assert_eq!(&*format!("{}", encode(b"11")),    "λ1(λλ1)(λ1(λλ1)(λλ1))");
-        assert_eq!(&*format!("{}", encode(b"001")),   "λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))");
-        assert_eq!(&*format!("{}", encode(b"100")),   "λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λλ1)))");
+        assert_eq!(&*format!("{}", encode(b"0")),     "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)\
+                                                       (λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))(λλ1)");
+        assert_eq!(&*format!("{}", encode(b"1")),     "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)\
+                                                       (λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
         assert_eq!(&*format!("{}", encode(b"a")),     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)\
                                                        (λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
-        assert_eq!(&*format!("{}", encode(b"z0")),    "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ1)(λ1(λλ1)\
-                                                       (λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λλ1)))))))))(λ1(λλ\
-                                                       2)(λλ1))");
-        assert_eq!(&*format!("{}", encode(b"\0(1)")), "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(\
-                                                       λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))(λ1(λ1(\
-                                                       λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2\
-                                                       )(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))(λ1(λλ1)(λ1(λ\
-                                                       1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ2)(λ1(λλ1)(λ1(λ\
-                                                       λ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1))))");
     }
 
     #[test]
