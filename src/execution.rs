@@ -24,7 +24,8 @@ pub enum Error {
 pub fn run(blc_program: &[u8], blc_argument: &[u8]) -> Result<String, Error> {
     let program = from_binary(blc_program);
     if program.is_err() { return Err(InvalidProgram) }
-    let calculation = beta_full(program.unwrap().app(encode(blc_argument))); // safe
+    let argument = encode(blc_argument);
+    let calculation = beta_full(program.unwrap().app(argument)); // safe
 
     Ok(decode(calculation))
 }
