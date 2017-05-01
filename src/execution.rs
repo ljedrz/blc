@@ -37,6 +37,15 @@ mod test {
     use binary_encoding::decompress;
 
     #[test]
+    fn id() {
+        let id     = b" ";
+        let id_blc = decompress(&*id);
+        let input  = b"herp derp";
+
+        assert_eq!(run(&*id_blc, &*input).unwrap(), "herp derp".to_owned());
+    }
+
+    #[test]
     fn inflating() {
         // program code from http://www.ioccc.org/2012/tromp/inflate.Blc
         let inflate_compressed =
