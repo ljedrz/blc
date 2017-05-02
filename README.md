@@ -20,8 +20,8 @@ Lambda terms have the following representation in BLC:
 Since BLC programs are basically lambda calculus terms, they can be applied to other terms. In
 order to be applicable to binary (but not BLC-encoded) input, it has to be lambda-encoded first.
 Bytestrings are lambda-encoded as
-[Church lists](https://en.wikipedia.org/wiki/Church_encoding#One_pair_as_a_list_node) of lists of
-bytes and bytes are lambda-encoded as Church lists of lambda-encoded bits.
+[Church lists](https://en.wikipedia.org/wiki/Church_encoding#One_pair_as_a_list_node) of bytes
+and bytes are lambda-encoded as Church lists of lambda-encoded bits.
 
 Bits 0 and 1 are lambda-encoded as
 [Church booleans](https://en.wikipedia.org/wiki/Church_encoding#Church_Booleans):
