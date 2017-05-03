@@ -2,7 +2,6 @@
 
 use lambda_calculus::term::*;
 use lambda_calculus::booleans::{tru, fls};
-use lambda_calculus::list::nil;
 use std::char;
 
 /// Decode lambda-encoded data as a `String`.
@@ -67,7 +66,7 @@ fn encode_bit(bit: u8) -> Term {
 ///     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
 /// ```
 pub fn encode(input: &[u8]) -> Term {
-    input.iter().rev().fold(nil(), |acc, &b| acc.push(encode_byte(b)))
+    Term::from(input.into_iter().map(|&b| encode_byte(b)).collect::<Vec<Term>>())
 }
 
 #[cfg(test)]
@@ -78,12 +77,12 @@ mod test {
 
     #[test]
     fn encoding_lambda() {
-        assert_eq!(&*format!("{}", encode(b"0")),     "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)\
-                                                       (λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))(λλ1)");
-        assert_eq!(&*format!("{}", encode(b"1")),     "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)\
-                                                       (λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
-        assert_eq!(&*format!("{}", encode(b"a")),     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)\
-                                                       (λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
+        assert_eq!(&*format!("{}", encode(b"0")),
+            "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))(λλ1)");
+        assert_eq!(&*format!("{}", encode(b"1")),
+            "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
+        assert_eq!(&*format!("{}", encode(b"a")),
+            "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
     }
 
     #[test]
