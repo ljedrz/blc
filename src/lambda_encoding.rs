@@ -21,16 +21,7 @@ pub fn decode(term: Term) -> String {
         "".into()
     } else if term.is_list() && term.head_ref().unwrap().is_list() {
         let (head, tail) = term.uncons().unwrap(); // safe, ensured by is_list
-        let terms: Vec<Term> = head.into_iter().collect();
-        let bits = terms
-            .into_iter()
-            .map(|t| (t
-                .unabs()
-                .and_then(|t| t.unabs())
-                .and_then(|t| t.unvar())
-                .unwrap() - 1) as u8
-            ).collect::<Vec<u8>>();
-        let byte = !bits.iter().fold(0, |acc, &b| acc * 2 + b);
+        let byte = decode_byte(head);
         let chr = char::from(byte);
         chr.to_string() + &decode(tail)
     } else if term.head_ref() == Ok(&fls()) {
@@ -40,6 +31,19 @@ pub fn decode(term: Term) -> String {
     } else {
         format!("({})", term)
     }
+}
+
+fn decode_byte(encoded_byte: Term) -> u8 {
+    let bits = encoded_byte
+        .into_iter()
+        .map(|t| (t
+            .unabs()
+            .and_then(|t| t.unabs())
+            .and_then(|t| t.unvar())
+            .expect("not a lambda-encoded byte!") - 1) as u8
+        );
+
+    !bits.fold(0, |acc, b| acc * 2 + b)
 }
 
 fn encode_byte(byte: u8) -> Term {
