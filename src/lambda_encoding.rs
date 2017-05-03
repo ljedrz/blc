@@ -19,20 +19,21 @@ use std::char;
 pub fn decode(term: Term) -> String {
     if term == fls() {
         "".into()
-    } else if term.is_list() && term.head_ref().unwrap().is_list() {
-        let (head, tail) = term.uncons().unwrap(); // safe, ensured by is_list
+    } else if term.is_list() && term.head_ref().unwrap().is_list() { // safe
+        let (head, tail) = term.uncons().unwrap(); // safe
         let byte = decode_byte(head);
         let chr = char::from(byte);
         chr.to_string() + &decode(tail)
     } else if term.head_ref() == Ok(&fls()) {
-        "1".to_string() + &decode(term.tail().unwrap())
+        "1".to_string() + &decode(term.tail().unwrap()) // safe
     } else if term.head_ref() == Ok(&tru()) {
-        "0".to_string() + &decode(term.tail().unwrap())
+        "0".to_string() + &decode(term.tail().unwrap()) // safe
     } else {
         format!("({})", term)
     }
 }
 
+// TODO: make safer
 fn decode_byte(encoded_byte: Term) -> u8 {
     let bits = encoded_byte
         .into_iter()
@@ -90,7 +91,7 @@ mod test {
     }
 
     #[test]
-    fn decoding() {
+    fn decoding_lambda() {
         let k =     from_binary(b"0000110").unwrap();
         let s =     from_binary(b"00000001011110100111010").unwrap();
         let quine = from_binary(b"000101100100011010000000000001011\
