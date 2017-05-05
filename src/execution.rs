@@ -11,7 +11,7 @@ pub enum Error {
     InvalidProgram
 }
 
-/// Executes a binary lambda calculus program, feeding it the given argument.
+/// Executes a binary lambda calculus program, optionally feeding it the given argument.
 ///
 /// # Example
 /// ```
@@ -20,13 +20,18 @@ pub enum Error {
 /// let reverse = b"00 01 01 10 01 00 01 10 10 00 00 00 00 01 01 110\
 ///                 01 11110 11110 00 01 01 10 11110 110 00 00 10";
 ///
-/// assert_eq!(run(&*reverse, b"herp derp"), Ok("pred preh".into()));
+/// assert_eq!(run(&*reverse, Some(b"herp derp")), Ok("pred preh".into()));
 /// ```
-pub fn run(blc_program: &[u8], blc_argument: &[u8]) -> Result<String, Error> {
+pub fn run(blc_program: &[u8], blc_argument: Option<&[u8]>) -> Result<String, Error> {
     let program = from_binary(blc_program);
     if program.is_err() { return Err(InvalidProgram) }
-    let argument = encode(blc_argument);
-    let calculation = beta_full(program.unwrap().app(argument)); // safe
+
+    let calculation = if blc_argument.is_some() {
+        let argument = encode(blc_argument.unwrap());
+        beta_full(program.unwrap().app(argument)) // safe
+    } else {
+        beta_full(program.unwrap())
+    };
 
     Ok(decode(calculation))
 }
@@ -42,7 +47,7 @@ mod test {
         let id_blc        = decompress(&*id_compressed);
         let input         = b"herp derp";
 
-        assert_eq!(run(&*id_blc, &*input).unwrap(), "herp derp".to_owned());
+        assert_eq!(run(&*id_blc, Some(&*input)).unwrap(), "herp derp".to_owned());
     }
 
     #[test]
@@ -56,7 +61,7 @@ mod test {
         let sort_blc = decompress(&sort_compressed);
         let input  = b"3241";
 
-        assert_eq!(run(&*sort_blc, &*input).unwrap(), "1234".to_owned());
+        assert_eq!(run(&*sort_blc, Some(&*input)).unwrap(), "1234".to_owned());
     }
 
     #[test]
@@ -70,7 +75,7 @@ mod test {
         let inflate_blc = decompress(&inflate_compressed);
         let s_compressed = [0x1, 0x7a, 0x74];
 
-        assert_eq!(run(&*inflate_blc, &s_compressed[..]).unwrap(), "000000010111101001110100".to_owned());
+        assert_eq!(run(&*inflate_blc, Some(&s_compressed[..])).unwrap(), "000000010111101001110100".to_owned());
     }
 
     #[test]
@@ -84,7 +89,7 @@ mod test {
         let deflate_blc = decompress(&deflate_compressed);
         let s_blc = b"00000001011110100111010";
 
-        assert_eq!(run(&*deflate_blc, &s_blc[..]).unwrap().as_bytes(), [0x1, 0x7a, 0x74]);
+        assert_eq!(run(&*deflate_blc, Some(&s_blc[..])).unwrap().as_bytes(), [0x1, 0x7a, 0x74]);
     }
 /*
     #[test] /* WIP; this one parses properly, but doesn't return the expected result */
