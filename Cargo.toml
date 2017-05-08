@@ -12,4 +12,4 @@ categories = ["encoding"]
 exclude = [".cargo/*"]
 
 [dependencies]
-lambda_calculus = "0.6.0"
+lambda_calculus = "0.7.0"
