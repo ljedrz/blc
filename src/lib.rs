@@ -28,11 +28,11 @@
 //! | 0   | λλ2 (true)  | 0000110 |
 //! | 1   | λλ1 (false) | 000010  |
 //!
-//! Example: BLC-encoding steps for a byte representing the UTF-encoded letter 'a':
+//! Example: BLC-encoding steps for a byte representing the ASCII/UTF-8 encoded letter 'a':
 //!
 //! | encoding | representation |
 //! |----------|----------------|
-//! | UTF-8    | 96 (decimal)   |
+//! | decimal  | 96             |
 //! | binary   | 01100001       |
 //! | lambda   | λ1(<b>λλ2</b>)(λ1(<b>λλ1</b>)(λ1(<b>λλ1</b>)(λ1(<b>λλ2</b>)(λ1(<b>λλ2</b>)(λ1(<b>λλ2</b>)(λ1(<b>λλ2</b>)(λ1(<b>λλ1</b>)(λλ1)))))))) |
 //! | BLC      | 0001011000010110<b>0000110</b>00010110<b>000010</b>00010110<b>000010</b>00010110<b>0000110</b>00010110<b>0000110</b>00010110<b>0000110</b>00010110<b>0000110</b>00010110<b>000010</b>000010000010 |
