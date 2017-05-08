@@ -58,7 +58,10 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use binary_encoding::decompress;
+    use binary_encoding::{decompress, to_binary};
+    use lambda_calculus::term::*;
+    use lambda_calculus::term::Term::*;
+    use lambda_calculus::arithmetic::{is_zero, rem};
 
     #[test]
     fn id() {
@@ -110,6 +113,38 @@ mod test {
 
         assert_eq!(run(&*deflate_blc, Bytes(&s_blc[..])).unwrap().as_bytes(), [0x1, 0x7a, 0x74]);
     }
+
+    #[test]
+    fn fizz_buzz() {
+        let fizzbuzz_single =
+            abs(
+                app!(
+                    is_zero(),
+                    app!(rem(), Var(1), 15.into()),
+                    encode(&b"FizzBuzz"[..]),
+                    app!(
+                        is_zero(),
+                        app!(rem(), Var(1), 3.into()),
+                        encode(&b"Fizz"[..]),
+                        app!(
+                            is_zero(),
+                            app!(rem(), Var(1), 5.into()),
+                            encode(&b"Buzz"[..]),
+                            Var(1)
+                        )
+                    )
+                )
+            );
+        let fizzbuzz_blc = to_binary(&fizzbuzz_single);
+
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&1.into()))).unwrap(),  "(λλ21)");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&2.into()))).unwrap(),  "(λλ2(21))");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&3.into()))).unwrap(),  "Fizz");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&4.into()))).unwrap(),  "(λλ2(2(2(21))))");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&5.into()))).unwrap(),  "Buzz");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&15.into()))).unwrap(), "FizzBuzz");
+    }
+
 /*
     #[test] /* WIP; this one parses properly, but doesn't return the expected result */
     fn hilbert() {
