@@ -2,7 +2,7 @@
 
 use binary_encoding::{from_binary};
 use lambda_encoding::{encode, decode};
-use lambda_calculus::reduction::beta_full;
+use lambda_calculus::reduction::{beta_full, Order};
 use self::Error::*;
 use self::Input::*;
 
@@ -41,12 +41,12 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
     let program = program.unwrap(); // safe
 
     let calculation = match input {
-        Nothing     => beta_full(program),
-        Bytes(arg)  => beta_full(app!(program, encode(arg))),
+        Nothing     => beta_full(program, &Order::Normal),
+        Bytes(arg)  => beta_full(app!(program, encode(arg)), &Order::Normal),
         Binary(arg) => {
             let arg = from_binary(arg);
             if arg.is_ok() {
-                beta_full(app!(program, arg.unwrap())) // safe
+                beta_full(app!(program, arg.unwrap()), &Order::Normal) // safe
             } else {
                 return Err(InvalidArgument)
             }
