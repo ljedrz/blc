@@ -41,12 +41,12 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
     let program = program.unwrap(); // safe
 
     let calculation = match input {
-        Nothing     => beta(program, &Order::Normal, 0),
-        Bytes(arg)  => beta(app!(program, encode(arg)), &Order::Normal, 0),
+        Nothing     => beta(program, Order::NOR, 0),
+        Bytes(arg)  => beta(app!(program, encode(arg)), Order::NOR, 0),
         Binary(arg) => {
             let arg = from_binary(arg);
             if arg.is_ok() {
-                beta(app!(program, arg.unwrap()), &Order::Normal, 0) // safe
+                beta(app!(program, arg.unwrap()), Order::NOR, 0) // safe
             } else {
                 return Err(InvalidArgument)
             }
