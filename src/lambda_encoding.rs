@@ -29,7 +29,7 @@ pub fn decode(term: Term) -> String {
     } else if term.head_ref() == Ok(&tru()) {
         "0".to_string() + &decode(term.tail().unwrap()) // safe
     } else {
-        format!("({})", term)
+        format!("({:?})", term)
     }
 }
 
@@ -67,7 +67,7 @@ fn encode_bit(bit: u8) -> Term {
 /// ```
 /// use blc::lambda_encoding::encode;
 ///
-/// assert_eq!(&*format!("{}", encode(b"a")),
+/// assert_eq!(&*format!("{:?}", encode(b"a")),
 ///     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
 /// ```
 pub fn encode(input: &[u8]) -> Term {
@@ -82,11 +82,11 @@ mod test {
 
     #[test]
     fn encoding_lambda() {
-        assert_eq!(&*format!("{}", encode(b"0")),
+        assert_eq!(&*format!("{:?}", encode(b"0")),
             "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λλ1)))))))))(λλ1)");
-        assert_eq!(&*format!("{}", encode(b"1")),
+        assert_eq!(&*format!("{:?}", encode(b"1")),
             "λ1(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
-        assert_eq!(&*format!("{}", encode(b"a")),
+        assert_eq!(&*format!("{:?}", encode(b"a")),
             "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
     }
 
