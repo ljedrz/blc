@@ -1,7 +1,6 @@
 //! Binary encoding for lambda expressions
 
 use lambda_calculus::term::*;
-use lambda_calculus::term::Term::*;
 use self::Error::*;
 
 /// An error that can occur if the input stream of "bits" is not valid binary lambda calculus.

@@ -41,12 +41,12 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
     let program = program.unwrap(); // safe
 
     let calculation = match input {
-        Nothing     => beta(program, Order::NOR, 0),
-        Bytes(arg)  => beta(app!(program, encode(arg)), Order::NOR, 0),
+        Nothing     => beta(program, Order::NOR, 0, false),
+        Bytes(arg)  => beta(app!(program, encode(arg)), Order::NOR, 0, false),
         Binary(arg) => {
             let arg = from_binary(arg);
             if arg.is_ok() {
-                beta(app!(program, arg.unwrap()), Order::NOR, 0) // safe
+                beta(app!(program, arg.unwrap()), Order::NOR, 0, false) // safe
             } else {
                 return Err(InvalidArgument)
             }
@@ -61,7 +61,6 @@ mod test {
     use super::*;
     use binary_encoding::{decompress, to_binary};
     use lambda_calculus::term::*;
-    use lambda_calculus::term::Term::*;
     use lambda_calculus::arithmetic::{is_zero, rem};
 
     #[test]
