@@ -29,7 +29,7 @@ pub fn from_binary(input: &[u8]) -> Result<Term, Error> {
 }
 
 fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
-    if input.len() == 0 { return None }
+    if input.is_empty() { return None }
 
     if [9, 10, 13, 32].contains(&input[0]) {
         _from_binary(&input[1..]) // skip whitespaces
@@ -44,8 +44,8 @@ fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
             },
             b"01" => {
                 if let Some((term1, rest1)) = _from_binary(&input[2..]) {
-                    if let Some((term2, rest2)) = _from_binary(&rest1) {
-                        Some((app(term1, term2), &rest2))
+                    if let Some((term2, rest2)) = _from_binary(rest1) {
+                        Some((app(term1, term2), rest2))
                     } else {
                         None
                     }
@@ -55,7 +55,7 @@ fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
             },
             b"10" | b"11" => {
                 let i = input.iter().take_while(|&b| *b == b'1').count();
-                if input[2..].len() == 0 {
+                if input[2..].is_empty() {
                     Some((Var(i), &*b""))
                 } else {
                     Some((Var(i), &input[i+1..]))
