@@ -61,7 +61,7 @@ mod test {
     use super::*;
     use binary_encoding::{decompress, to_binary};
     use lambda_calculus::term::*;
-    use lambda_calculus::arithmetic::{is_zero, rem};
+    use lambda_calculus::church::numerals::{is_zero, rem};
 
     #[test]
     fn id() {

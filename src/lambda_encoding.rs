@@ -1,7 +1,7 @@
 //! Lambda encoding for byte strings
 
 use lambda_calculus::term::*;
-use lambda_calculus::booleans::{tru, fls};
+use lambda_calculus::church::booleans::{tru, fls};
 use std::char;
 
 /// Decode lambda-encoded data as a `String`.
