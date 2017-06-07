@@ -87,6 +87,16 @@ mod test {
     }
 
     #[test]
+    fn quine() {
+        // program code from https://tromp.github.io/cl/Binary_lambda_calculus.html#A_quine
+        let quine_blc = b"000101100100011010000000000001011\
+            011110010111100111111011111011010";
+        let input = b"hurr";
+
+        assert_eq!(run(&quine_blc[..], Bytes(&input[..])), Ok("hurrhurr".to_owned()));
+    }
+
+    #[test]
     fn inflating() {
         // program code from http://www.ioccc.org/2012/tromp/inflate.Blc
         let inflate_compressed =
