@@ -141,9 +141,10 @@ fn bits_to_byte(bits: &[u8]) -> u8 {
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::{decompress};
+/// use blc::binary_encoding::decompress;
 ///
 /// let succ_compressed = vec![0x1, 0xCB, 0xDA];
+///
 /// assert_eq!(decompress(&succ_compressed), b"000000011100101111011010");
 /// ```
 pub fn decompress(bytes: &[u8]) -> Vec<u8> {

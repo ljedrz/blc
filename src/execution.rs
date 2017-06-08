@@ -30,12 +30,11 @@ pub enum Input<'a> {
 /// # Example
 /// ```
 /// use blc::execution::run;
-/// use blc::execution::Input::*;
+/// use blc::execution::Input::Bytes;
 ///
-/// let reverse = b"00 01 01 10 01 00 01 10 10 00 00 00 00 01 01 110\
-///                 01 11110 11110 00 01 01 10 11110 110 00 00 10";
+/// let reverse_blc = b"0001011001000110100000000001011100111110111100001011011110110000010";
 ///
-/// assert_eq!(run(&*reverse, Bytes(b"herp derp")), Ok("pred preh".into()));
+/// assert_eq!(run(&*reverse_blc, Bytes(b"herp derp")), Ok("pred preh".into()));
 /// ```
 pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
     let program = from_binary(blc_program);
