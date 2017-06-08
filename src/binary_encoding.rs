@@ -6,6 +6,7 @@ use self::Error::*;
 /// An error that can occur if the input stream of "bits" is not valid binary lambda calculus.
 #[derive(Debug, PartialEq)]
 pub enum Error {
+    /// not a valid term
     NotATerm
 }
 

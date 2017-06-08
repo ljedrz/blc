@@ -9,7 +9,9 @@ use self::Input::*;
 /// An error that can occur during BLC execution.
 #[derive(Debug, PartialEq)]
 pub enum Error {
+    /// invalid BLC program
     InvalidProgram,
+    /// invalid BLC argument
     InvalidArgument
 }
 
