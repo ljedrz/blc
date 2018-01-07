@@ -1,8 +1,9 @@
 //! Lambda encoding for byte strings
 
 use lambda_calculus::term::*;
-use lambda_calculus::church::booleans::{tru, fls};
+use lambda_calculus::data::boolean::{tru, fls};
 use std::char;
+use pair_list::*;
 
 /// Decode lambda-encoded data as a `String`.
 ///
@@ -19,15 +20,15 @@ use std::char;
 pub fn decode(term: Term) -> String {
     if term == fls() {
         "".into()
-    } else if term.is_list() && term.head_ref().unwrap().is_list() { // safe
-        let (head, tail) = term.uncons().unwrap(); // safe
+    } else if is_list(&term) && is_list(head_ref(&term).unwrap()) { // safe
+        let (head, tail) = uncons(term).unwrap(); // safe
         let byte = decode_byte(head);
         let chr = char::from(byte);
         chr.to_string() + &decode(tail)
-    } else if term.head_ref() == Ok(&fls()) {
-        "1".to_string() + &decode(term.tail().unwrap()) // safe
-    } else if term.head_ref() == Ok(&tru()) {
-        "0".to_string() + &decode(term.tail().unwrap()) // safe
+    } else if head_ref(&term) == Ok(&fls()) {
+        "1".to_string() + &decode(tail(term).unwrap()) // safe
+    } else if head_ref(&term) == Ok(&tru()) {
+        "0".to_string() + &decode(tail(term).unwrap()) // safe
     } else {
         format!("({:?})", term)
     }
@@ -35,7 +36,7 @@ pub fn decode(term: Term) -> String {
 
 // TODO: make safer
 fn decode_byte(encoded_byte: Term) -> u8 {
-    let bits = encoded_byte
+    let bits = vectorize_list(encoded_byte)
         .into_iter()
         .map(|t| (t
             .unabs()
@@ -50,7 +51,7 @@ fn decode_byte(encoded_byte: Term) -> u8 {
 fn encode_byte(byte: u8) -> Term {
     let bitstr = format!("{:08b}", byte);
     let bits = bitstr.as_bytes();
-    Term::from(bits.into_iter().map(|&bit| encode_bit(bit)).collect::<Vec<Term>>())
+    listify_terms(bits.into_iter().map(|&bit| encode_bit(bit)).collect::<Vec<Term>>())
 }
 
 fn encode_bit(bit: u8) -> Term {
@@ -71,14 +72,13 @@ fn encode_bit(bit: u8) -> Term {
 ///     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
 /// ```
 pub fn encode(input: &[u8]) -> Term {
-    Term::from(input.into_iter().map(|&b| encode_byte(b)).collect::<Vec<Term>>())
+    listify_terms(input.into_iter().map(|&b| encode_byte(b)).collect::<Vec<Term>>())
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
     use binary_encoding::from_binary;
-    use std::str;
 
     #[test]
     fn encoding_lambda() {

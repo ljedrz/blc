@@ -1,6 +1,6 @@
 [package]
 name = "blc"
-version = "0.4.5"
+version = "0.5.5"
 authors = ["ljedrz <ljedrz@gmail.com>"]
 description = "An implementation of the binary lambda calculus."
 repository = "https://github.com/ljedrz/blc"
@@ -12,4 +12,4 @@ categories = ["encoding"]
 exclude = [".cargo/*"]
 
 [dependencies]
-lambda_calculus = "^1.0"
+lambda_calculus = "^2.0"

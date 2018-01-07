@@ -1,8 +1,8 @@
 //! Binary lambda calculus execution
 
-use binary_encoding::{from_binary};
+use lambda_calculus::*;
+use binary_encoding::from_binary;
 use lambda_encoding::{encode, decode};
-use lambda_calculus::reduction::{beta, Order};
 use self::Error::*;
 use self::Input::*;
 
@@ -42,12 +42,12 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
     let program = program.unwrap(); // safe
 
     let calculation = match input {
-        Nothing     => beta(program, Order::NOR, 0, false),
-        Bytes(arg)  => beta(app!(program, encode(arg)), Order::NOR, 0, false),
+        Nothing     => beta(program, NOR, 0),
+        Bytes(arg)  => beta(app(program, encode(arg)), NOR, 0),
         Binary(arg) => {
             let arg = from_binary(arg);
             if arg.is_ok() {
-                beta(app!(program, arg.unwrap()), Order::NOR, 0, false) // safe
+                beta(app(program, arg.unwrap()), NOR, 0) // safe
             } else {
                 return Err(InvalidArgument)
             }
@@ -61,8 +61,7 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
 mod test {
     use super::*;
     use binary_encoding::{decompress, to_binary};
-    use lambda_calculus::term::*;
-    use lambda_calculus::church::numerals::{is_zero, rem};
+    use lambda_calculus::data::num::church::{is_zero, rem};
 
     #[test]
     fn id() {
@@ -131,15 +130,15 @@ mod test {
             abs(
                 app!(
                     is_zero(),
-                    app!(rem(), Var(1), 15.into()),
+                    app!(rem(), Var(1), 15.into_church()),
                     encode(&b"FizzBuzz"[..]),
                     app!(
                         is_zero(),
-                        app!(rem(), Var(1), 3.into()),
+                        app!(rem(), Var(1), 3.into_church()),
                         encode(&b"Fizz"[..]),
                         app!(
                             is_zero(),
-                            app!(rem(), Var(1), 5.into()),
+                            app!(rem(), Var(1), 5.into_church()),
                             encode(&b"Buzz"[..]),
                             Var(1)
                         )
@@ -148,12 +147,12 @@ mod test {
             );
         let fizzbuzz_blc = to_binary(&fizzbuzz_single);
 
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&1.into()))).unwrap(),  "(λλ21)");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&2.into()))).unwrap(),  "(λλ2(21))");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&3.into()))).unwrap(),  "Fizz");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&4.into()))).unwrap(),  "(λλ2(2(2(21))))");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&5.into()))).unwrap(),  "Buzz");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&15.into()))).unwrap(), "FizzBuzz");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&1.into_church()))).unwrap(),  "(λλ21)");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&2.into_church()))).unwrap(),  "(λλ2(21))");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&3.into_church()))).unwrap(),  "Fizz");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&4.into_church()))).unwrap(),  "(λλ2(2(2(21))))");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&5.into_church()))).unwrap(),  "Buzz");
+        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&15.into_church()))).unwrap(), "FizzBuzz");
     }
 
 /*
