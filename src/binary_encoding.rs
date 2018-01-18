@@ -184,8 +184,8 @@ mod test {
     #[test]
     fn abstractions() {
         assert_eq!(from_binary(b"0010"),     Ok(abs(Var(1))));
-        assert_eq!(from_binary(b"000010"),   Ok(abs(abs(Var(1)))));
-        assert_eq!(from_binary(b"00000010"), Ok(abs(abs(abs((Var(1)))))));
+        assert_eq!(from_binary(b"000010"),   Ok(abs!(2, Var(1))));
+        assert_eq!(from_binary(b"00000010"), Ok(abs!(3, Var(1))));
     }
 
     #[test]
@@ -197,7 +197,7 @@ mod test {
 
     #[test]
     fn ignoring_whitespaces() {
-        assert_eq!(from_binary(b"00 00\t00\n10\r\n"), Ok(abs(abs(abs((Var(1)))))));
+        assert_eq!(from_binary(b"00 00\t00\n10\r\n"), Ok(abs!(3, Var(1))));
     }
 
     #[test]
