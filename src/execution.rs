@@ -4,7 +4,6 @@ use lambda_calculus::*;
 use binary_encoding::from_binary;
 use lambda_encoding::{encode, decode};
 use self::Error::*;
-use self::Input::*;
 
 /// An error that can occur during BLC execution.
 #[derive(Debug, PartialEq)]
@@ -42,9 +41,9 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
     let program = program.unwrap(); // safe
 
     let calculation = match input {
-        Nothing     => beta(program, NOR, 0),
-        Bytes(arg)  => beta(app(program, encode(arg)), NOR, 0),
-        Binary(arg) => {
+        Input::Nothing     => beta(program, NOR, 0),
+        Input::Bytes(arg)  => beta(app(program, encode(arg)), NOR, 0),
+        Input::Binary(arg) => {
             let arg = from_binary(arg);
             if arg.is_ok() {
                 beta(app(program, arg.unwrap()), NOR, 0) // safe
@@ -69,7 +68,7 @@ mod test {
         let id_blc        = decompress(&*id_compressed);
         let input         = b"herp derp";
 
-        assert_eq!(run(&*id_blc, Bytes(&*input)).unwrap(), "herp derp".to_owned());
+        assert_eq!(run(&*id_blc, Input::Bytes(&*input)).unwrap(), "herp derp".to_owned());
     }
 
     #[test]
@@ -83,7 +82,7 @@ mod test {
         let sort_blc = decompress(&sort_compressed);
         let input  = b"3241";
 
-        assert_eq!(run(&*sort_blc, Bytes(&*input)).unwrap(), "1234".to_owned());
+        assert_eq!(run(&*sort_blc, Input::Bytes(&*input)).unwrap(), "1234".to_owned());
     }
 
     #[test]
@@ -93,7 +92,7 @@ mod test {
             011110010111100111111011111011010";
         let input = b"hurr";
 
-        assert_eq!(run(&quine_blc[..], Bytes(&input[..])), Ok("hurrhurr".to_owned()));
+        assert_eq!(run(&quine_blc[..], Input::Bytes(&input[..])), Ok("hurrhurr".to_owned()));
     }
 
     #[test]
@@ -107,7 +106,7 @@ mod test {
         let inflate_blc = decompress(&inflate_compressed);
         let s_compressed = [0x1, 0x7a, 0x74];
 
-        assert_eq!(run(&*inflate_blc, Bytes(&s_compressed[..])).unwrap(), "000000010111101001110100".to_owned());
+        assert_eq!(run(&*inflate_blc, Input::Bytes(&s_compressed[..])).unwrap(), "000000010111101001110100".to_owned());
     }
 
     #[test]
@@ -121,7 +120,7 @@ mod test {
         let deflate_blc = decompress(&deflate_compressed);
         let s_blc = b"00000001011110100111010";
 
-        assert_eq!(run(&*deflate_blc, Bytes(&s_blc[..])).unwrap().as_bytes(), [0x1, 0x7a, 0x74]);
+        assert_eq!(run(&*deflate_blc, Input::Bytes(&s_blc[..])).unwrap().as_bytes(), [0x1, 0x7a, 0x74]);
     }
 
     #[test]
@@ -147,12 +146,12 @@ mod test {
             );
         let fizzbuzz_blc = to_binary(&fizzbuzz_single);
 
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&1.into_church()))).unwrap(),  "(λλ21)");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&2.into_church()))).unwrap(),  "(λλ2(21))");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&3.into_church()))).unwrap(),  "Fizz");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&4.into_church()))).unwrap(),  "(λλ2(2(2(21))))");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&5.into_church()))).unwrap(),  "Buzz");
-        assert_eq!(run(&*fizzbuzz_blc, Binary(&to_binary(&15.into_church()))).unwrap(), "FizzBuzz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&1.into_church()))).unwrap(),  "(λλ21)");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&2.into_church()))).unwrap(),  "(λλ2(21))");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&3.into_church()))).unwrap(),  "Fizz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&4.into_church()))).unwrap(),  "(λλ2(2(2(21))))");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&5.into_church()))).unwrap(),  "Buzz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&15.into_church()))).unwrap(), "FizzBuzz");
     }
 
 /*
