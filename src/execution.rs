@@ -53,7 +53,7 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
         }
     };
 
-    Ok(decode(calculation))
+    decode(calculation).or(Err(InvalidProgram))
 }
 
 #[cfg(test)]

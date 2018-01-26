@@ -2,6 +2,7 @@
 
 use lambda_calculus::term::*;
 use lambda_calculus::data::boolean::{tru, fls};
+use binary_encoding::Error;
 use std::char;
 use pair_list::*;
 
@@ -12,40 +13,36 @@ use pair_list::*;
 /// use blc::binary_encoding::from_binary;
 /// use blc::lambda_encoding::decode;
 ///
-/// let k = from_binary(b"0000110");
+/// let k = from_binary(b"0000110").unwrap();
 ///
-/// assert!(k.is_ok());
-/// assert_eq!(decode(k.unwrap()), "(λλ2)");
+/// assert_eq!(decode(k).unwrap(), "(λλ2)");
 /// ```
-pub fn decode(term: Term) -> String {
+pub fn decode(term: Term) -> Result<String, Error> {
     if term == fls() {
-        "".into()
+        Ok("".into())
     } else if is_list(&term) && is_list(head_ref(&term).unwrap()) { // safe
         let (head, tail) = uncons(term).unwrap(); // safe
-        let byte = decode_byte(head);
+        let byte = decode_byte(head)?;
         let chr = char::from(byte);
-        chr.to_string() + &decode(tail)
+        Ok(chr.to_string() + &decode(tail)?)
     } else if head_ref(&term) == Ok(&fls()) {
-        "1".to_string() + &decode(tail(term).unwrap()) // safe
+        Ok("1".to_string() + &decode(tail(term).unwrap())?) // safe
     } else if head_ref(&term) == Ok(&tru()) {
-        "0".to_string() + &decode(tail(term).unwrap()) // safe
+        Ok("0".to_string() + &decode(tail(term).unwrap())?) // safe
     } else {
-        format!("({:?})", term)
+        Ok(format!("({:?})", term))
     }
 }
 
-// TODO: make safer
-fn decode_byte(encoded_byte: Term) -> u8 {
+fn decode_byte(encoded_byte: Term) -> Result<u8, Error> {
     let bits = vectorize_list(encoded_byte)
         .into_iter()
-        .map(|t| (t
-            .unabs()
-            .and_then(|t| t.unabs())
-            .and_then(|t| t.unvar())
-            .expect("not a lambda-encoded byte!") - 1) as u8
-        );
+        .map(|t| t.unabs().and_then(|t| t.unabs()).and_then(|t| t.unvar()))
+        .collect::<Vec<Result<usize, TermError>>>();
 
-    !bits.fold(0, |acc, b| acc * 2 + b)
+    if bits.iter().any(|b| b.is_err()) { return Err(Error::NotATerm) }
+
+    Ok(!bits.into_iter().map(|b| (b.unwrap() - 1) as u8).fold(0, |acc, b| acc * 2 + b))
 }
 
 fn encode_byte(byte: u8) -> Term {
@@ -97,16 +94,16 @@ mod test {
         let quine = from_binary(b"000101100100011010000000000001011\
                                   011110010111100111111011111011010").unwrap();
 
-        assert_eq!(decode(k),     "(λλ2)");
-        assert_eq!(decode(s),     "(λλλ31(21))");
-        assert_eq!(decode(quine), "(λ1((λ11)(λλλλλ14(3(55)2)))1)");
+        assert_eq!(decode(k).unwrap(),     "(λλ2)");
+        assert_eq!(decode(s).unwrap(),     "(λλλ31(21))");
+        assert_eq!(decode(quine).unwrap(), "(λ1((λ11)(λλλλλ14(3(55)2)))1)");
     }
 
     #[test]
     fn decode_encode_lambda() {
-        assert_eq!(decode(encode(b"herp derp")),             "herp derp");
-        assert_eq!(decode(encode(b"0111010101011")),         "0111010101011");
-        assert_eq!(decode(encode(b"01zeros110and1ones101")), "01zeros110and1ones101");
-        assert_eq!(decode(encode(b"\0(1)")),                 "\0(1)");
+        assert_eq!(decode(encode(b"herp derp")).unwrap(),             "herp derp");
+        assert_eq!(decode(encode(b"0111010101011")).unwrap(),         "0111010101011");
+        assert_eq!(decode(encode(b"01zeros110and1ones101")).unwrap(), "01zeros110and1ones101");
+        assert_eq!(decode(encode(b"\0(1)")).unwrap(),                 "\0(1)");
     }
 }
