@@ -42,6 +42,9 @@
 #[macro_use]
 extern crate lambda_calculus;
 
+pub use self::execution::run;
+pub use self::encoding::binary::{to_bits, from_bits};
+
 pub mod encoding;
 pub mod execution;
 mod pair_list;
