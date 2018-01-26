@@ -35,14 +35,16 @@ pub fn decode(term: Term) -> Result<String, Error> {
 }
 
 fn decode_byte(encoded_byte: Term) -> Result<u8, Error> {
-    let bits = vectorize_list(encoded_byte)
+    let indices = vectorize_list(encoded_byte)
         .into_iter()
         .map(|t| t.unabs().and_then(|t| t.unabs()).and_then(|t| t.unvar()))
-        .collect::<Vec<Result<usize, TermError>>>();
+        .collect::<Result<Vec<usize>, TermError>>();
 
-    if bits.iter().any(|b| b.is_err()) { return Err(Error::NotATerm) }
-
-    Ok(!bits.into_iter().map(|b| (b.unwrap() - 1) as u8).fold(0, |acc, b| acc * 2 + b))
+    if let Ok(indices) = indices {
+        Ok(!indices.into_iter().map(|b| (b - 1) as u8).fold(0, |acc, b| acc * 2 + b))
+    } else {
+        Err(Error::NotATerm)
+    }
 }
 
 fn encode_byte(byte: u8) -> Term {
