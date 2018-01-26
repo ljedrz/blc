@@ -1,4 +1,4 @@
-//! Binary encoding for lambda expressions
+//! Binary lambda encoding (blc)
 
 use lambda_calculus::term::*;
 use self::Error::*;
@@ -14,7 +14,7 @@ pub enum Error {
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::{from_bits, to_bits};
+/// use blc::encoding::binary::{from_bits, to_bits};
 ///
 /// let k = from_bits(b"0000110");
 ///
@@ -71,7 +71,7 @@ fn _from_bits(input: &[u8]) -> Option<(Term, &[u8])> {
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::{from_bits, to_bits};
+/// use blc::encoding::binary::{from_bits, to_bits};
 ///
 /// let k = from_bits(b"0000110");
 ///
@@ -108,7 +108,7 @@ fn _to_bits(term: &Term, output: &mut Vec<u8>) {
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::{compress};
+/// use blc::encoding::binary::{compress};
 ///
 /// let succ_compressed = compress(&*b"000000011100101111011010");
 /// assert_eq!(succ_compressed, vec![0x1, 0xCB, 0xDA]);
@@ -141,7 +141,7 @@ fn bits_to_byte(bits: &[u8]) -> u8 {
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::decompress;
+/// use blc::encoding::binary::decompress;
 ///
 /// let succ_compressed = vec![0x1, 0xCB, 0xDA];
 ///

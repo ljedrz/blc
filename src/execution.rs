@@ -1,8 +1,8 @@
 //! Binary lambda calculus execution
 
 use lambda_calculus::*;
-use binary_encoding::from_bits;
-use lambda_encoding::{encode, decode};
+use encoding::binary::from_bits;
+use encoding::lambda::{encode, decode};
 use self::Error::*;
 
 /// An error that can occur during BLC execution.
@@ -59,7 +59,7 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use binary_encoding::{decompress, to_bits};
+    use encoding::binary::{decompress, to_bits};
     use lambda_calculus::data::num::church::{is_zero, rem};
 
     #[test]

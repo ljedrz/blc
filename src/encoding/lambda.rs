@@ -2,7 +2,7 @@
 
 use lambda_calculus::term::*;
 use lambda_calculus::data::boolean::{tru, fls};
-use binary_encoding::Error;
+use encoding::binary::Error;
 use std::char;
 use pair_list::*;
 
@@ -10,8 +10,8 @@ use pair_list::*;
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::from_bits;
-/// use blc::lambda_encoding::decode;
+/// use blc::encoding::binary::from_bits;
+/// use blc::encoding::lambda::decode;
 ///
 /// let k = from_bits(b"0000110").unwrap();
 ///
@@ -63,7 +63,7 @@ fn encode_bit(bit: u8) -> Term {
 ///
 /// # Example
 /// ```
-/// use blc::lambda_encoding::encode;
+/// use blc::encoding::lambda::encode;
 ///
 /// assert_eq!(&*format!("{:?}", encode(b"a")),
 ///     "λ1(λ1(λλ2)(λ1(λλ1)(λ1(λλ1)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ2)(λ1(λλ1)(λλ1)))))))))(λλ1)");
@@ -75,7 +75,7 @@ pub fn encode(input: &[u8]) -> Term {
 #[cfg(test)]
 mod test {
     use super::*;
-    use binary_encoding::from_bits;
+    use encoding::binary::from_bits;
 
     #[test]
     fn encoding_lambda() {
