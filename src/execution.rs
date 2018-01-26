@@ -1,7 +1,7 @@
 //! Binary lambda calculus execution
 
 use lambda_calculus::*;
-use binary_encoding::from_binary;
+use binary_encoding::from_bits;
 use lambda_encoding::{encode, decode};
 use self::Error::*;
 
@@ -36,7 +36,7 @@ pub enum Input<'a> {
 /// assert_eq!(run(&*reverse_blc, Bytes(b"herp derp")), Ok("pred preh".into()));
 /// ```
 pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
-    let program = from_binary(blc_program);
+    let program = from_bits(blc_program);
     if program.is_err() { return Err(InvalidProgram) }
     let program = program.unwrap(); // safe
 
@@ -44,7 +44,7 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
         Input::Nothing     => beta(program, NOR, 0),
         Input::Bytes(arg)  => beta(app(program, encode(arg)), NOR, 0),
         Input::Bits(arg) => {
-            let arg = from_binary(arg);
+            let arg = from_bits(arg);
             if arg.is_ok() {
                 beta(app(program, arg.unwrap()), NOR, 0) // safe
             } else {
@@ -59,7 +59,7 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use binary_encoding::{decompress, to_binary};
+    use binary_encoding::{decompress, to_bits};
     use lambda_calculus::data::num::church::{is_zero, rem};
 
     #[test]
@@ -144,14 +144,14 @@ mod test {
                     )
                 )
             );
-        let fizzbuzz_blc = to_binary(&fizzbuzz_single);
+        let fizzbuzz_blc = to_bits(&fizzbuzz_single);
 
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&1.into_church()))).unwrap(),  "(λλ21)");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&2.into_church()))).unwrap(),  "(λλ2(21))");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&3.into_church()))).unwrap(),  "Fizz");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&4.into_church()))).unwrap(),  "(λλ2(2(2(21))))");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&5.into_church()))).unwrap(),  "Buzz");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&15.into_church()))).unwrap(), "FizzBuzz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&1.into_church()))).unwrap(),  "(λλ21)");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&2.into_church()))).unwrap(),  "(λλ2(21))");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&3.into_church()))).unwrap(),  "Fizz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&4.into_church()))).unwrap(),  "(λλ2(2(2(21))))");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&5.into_church()))).unwrap(),  "Buzz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&15.into_church()))).unwrap(), "FizzBuzz");
     }
 
 /*

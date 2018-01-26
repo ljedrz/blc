@@ -10,42 +10,42 @@ pub enum Error {
     NotATerm
 }
 
-/// Parse a binary-encoded lambda `Term`.
+/// Parse a blc-encoded lambda `Term`.
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::{from_binary, to_binary};
+/// use blc::binary_encoding::{from_bits, to_bits};
 ///
-/// let k = from_binary(b"0000110");
+/// let k = from_bits(b"0000110");
 ///
 /// assert!(k.is_ok());
-/// assert_eq!(to_binary(&k.unwrap()), Vec::from(&b"0000110"[..]));
+/// assert_eq!(to_bits(&k.unwrap()), Vec::from(&b"0000110"[..]));
 /// ```
-pub fn from_binary(input: &[u8]) -> Result<Term, Error> {
-    if let Some((result, _)) = _from_binary(input) {
+pub fn from_bits(input: &[u8]) -> Result<Term, Error> {
+    if let Some((result, _)) = _from_bits(input) {
         Ok(result)
     } else {
         Err(NotATerm)
     }
 }
 
-fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
+fn _from_bits(input: &[u8]) -> Option<(Term, &[u8])> {
     if input.is_empty() { return None }
 
     if [9, 10, 13, 32].contains(&input[0]) {
-        _from_binary(&input[1..]) // skip whitespaces
+        _from_bits(&input[1..]) // skip whitespaces
     } else {
         match &input[0..2] {
             b"00" => {
-                if let Some((term, rest)) = _from_binary(&input[2..]) {
+                if let Some((term, rest)) = _from_bits(&input[2..]) {
                     Some((abs(term), rest))
                 } else {
                     None
                 }
             },
             b"01" => {
-                if let Some((term1, rest1)) = _from_binary(&input[2..]) {
-                    if let Some((term2, rest2)) = _from_binary(rest1) {
+                if let Some((term1, rest1)) = _from_bits(&input[2..]) {
+                    if let Some((term2, rest2)) = _from_bits(rest1) {
                         Some((app(term1, term2), rest2))
                     } else {
                         None
@@ -67,25 +67,25 @@ fn _from_binary(input: &[u8]) -> Option<(Term, &[u8])> {
     }
 }
 
-/// Represent a lambda `Term` in binary.
+/// Represent a lambda `Term` in blc.
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::{from_binary, to_binary};
+/// use blc::binary_encoding::{from_bits, to_bits};
 ///
-/// let k = from_binary(b"0000110");
+/// let k = from_bits(b"0000110");
 ///
 /// assert!(k.is_ok());
-/// assert_eq!(to_binary(&k.unwrap()), Vec::from(&b"0000110"[..]));
+/// assert_eq!(to_bits(&k.unwrap()), Vec::from(&b"0000110"[..]));
 /// ```
-pub fn to_binary(term: &Term) -> Vec<u8> {
+pub fn to_bits(term: &Term) -> Vec<u8> {
     let mut output = Vec::new();
-    _to_binary(term, &mut output);
+    _to_bits(term, &mut output);
 
     output
 }
 
-fn _to_binary(term: &Term, output: &mut Vec<u8>) {
+fn _to_bits(term: &Term, output: &mut Vec<u8>) {
     match *term {
         Var(i) => {
             for _ in 0..i { output.push(b'1') }
@@ -93,12 +93,12 @@ fn _to_binary(term: &Term, output: &mut Vec<u8>) {
         }
         Abs(ref t) => {
             output.extend_from_slice(b"00");
-            output.append(&mut to_binary(t));
+            output.append(&mut to_bits(t));
         }
         App(ref t1, ref t2) => {
             output.extend_from_slice(b"01");
-            output.append(&mut to_binary(t1));
-            output.append(&mut to_binary(t2));
+            output.append(&mut to_bits(t1));
+            output.append(&mut to_bits(t2));
         }
     }
 }
@@ -113,19 +113,19 @@ fn _to_binary(term: &Term, output: &mut Vec<u8>) {
 /// let succ_compressed = compress(&*b"000000011100101111011010");
 /// assert_eq!(succ_compressed, vec![0x1, 0xCB, 0xDA]);
 /// ```
-pub fn compress(binary: &[u8]) -> Vec<u8> {
-    let length = binary.len();
+pub fn compress(bits: &[u8]) -> Vec<u8> {
+    let length = bits.len();
     let mut output = Vec::with_capacity(length / 8 + 1);
     let mut pos = 0;
 
     while pos <= length - 8 {
-        output.push(bits_to_byte(&binary[pos..(pos + 8)]));
+        output.push(bits_to_byte(&bits[pos..(pos + 8)]));
         pos += 8;
     }
 
     if pos != length {
         let mut last_byte = Vec::with_capacity(8);
-        last_byte.extend_from_slice(&binary[pos..]);
+        last_byte.extend_from_slice(&bits[pos..]);
         for _ in 0..(8 - (length - pos)) { last_byte.push(b'0') }
         output.push(bits_to_byte(&last_byte));
     }
@@ -176,44 +176,44 @@ mod test {
 
     #[test]
     fn variables() {
-        assert_eq!(from_binary(b"10"),   Ok(Var(1)));
-        assert_eq!(from_binary(b"110"),  Ok(Var(2)));
-        assert_eq!(from_binary(b"1110"), Ok(Var(3)));
+        assert_eq!(from_bits(b"10"),   Ok(Var(1)));
+        assert_eq!(from_bits(b"110"),  Ok(Var(2)));
+        assert_eq!(from_bits(b"1110"), Ok(Var(3)));
     }
 
     #[test]
     fn abstractions() {
-        assert_eq!(from_binary(b"0010"),     Ok(abs(Var(1))));
-        assert_eq!(from_binary(b"000010"),   Ok(abs!(2, Var(1))));
-        assert_eq!(from_binary(b"00000010"), Ok(abs!(3, Var(1))));
+        assert_eq!(from_bits(b"0010"),     Ok(abs(Var(1))));
+        assert_eq!(from_bits(b"000010"),   Ok(abs!(2, Var(1))));
+        assert_eq!(from_bits(b"00000010"), Ok(abs!(3, Var(1))));
     }
 
     #[test]
     fn applications() {
-        assert_eq!(from_binary(b"011010"),  Ok(app(Var(1), Var(1))));
-        assert_eq!(from_binary(b"0110110"), Ok(app(Var(1), Var(2))));
-        assert_eq!(from_binary(b"0111010"), Ok(app(Var(2), Var(1))));
+        assert_eq!(from_bits(b"011010"),  Ok(app(Var(1), Var(1))));
+        assert_eq!(from_bits(b"0110110"), Ok(app(Var(1), Var(2))));
+        assert_eq!(from_bits(b"0111010"), Ok(app(Var(2), Var(1))));
     }
 
     #[test]
     fn ignoring_whitespaces() {
-        assert_eq!(from_binary(b"00 00\t00\n10\r\n"), Ok(abs!(3, Var(1))));
+        assert_eq!(from_bits(b"00 00\t00\n10\r\n"), Ok(abs!(3, Var(1))));
     }
 
     #[test]
-    fn from_binary_and_back() {
+    fn from_bits_and_back() {
         let k =    b"0000110";
         let v15 =  b"1111111111111110";
         let s =    b"00000001011110100111010";
         let succ = b"000000011100101111011010";
 
-        assert_eq!(to_binary(&from_binary(&*k).unwrap()),      k);
-        assert_eq!(to_binary(&from_binary(&*v15).unwrap()),    v15);
-        assert_eq!(to_binary(&from_binary(&*s).unwrap()),      s);
-        assert_eq!(to_binary(&from_binary(&*succ).unwrap()),   succ);
-        assert_eq!(to_binary(&from_binary(&*QUINE).unwrap()),  &QUINE[..]);
-        assert_eq!(to_binary(&from_binary(&*PRIMES).unwrap()), Vec::from(&PRIMES[..]));
-        assert_eq!(to_binary(&from_binary(&*BLC).unwrap()),    Vec::from(&BLC[..]));
+        assert_eq!(to_bits(&from_bits(&*k).unwrap()),      k);
+        assert_eq!(to_bits(&from_bits(&*v15).unwrap()),    v15);
+        assert_eq!(to_bits(&from_bits(&*s).unwrap()),      s);
+        assert_eq!(to_bits(&from_bits(&*succ).unwrap()),   succ);
+        assert_eq!(to_bits(&from_bits(&*QUINE).unwrap()),  &QUINE[..]);
+        assert_eq!(to_bits(&from_bits(&*PRIMES).unwrap()), Vec::from(&PRIMES[..]));
+        assert_eq!(to_bits(&from_bits(&*BLC).unwrap()),    Vec::from(&BLC[..]));
     }
 
     #[test]

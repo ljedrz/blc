@@ -10,10 +10,10 @@ use pair_list::*;
 ///
 /// # Example
 /// ```
-/// use blc::binary_encoding::from_binary;
+/// use blc::binary_encoding::from_bits;
 /// use blc::lambda_encoding::decode;
 ///
-/// let k = from_binary(b"0000110").unwrap();
+/// let k = from_bits(b"0000110").unwrap();
 ///
 /// assert_eq!(decode(k).unwrap(), "(λλ2)");
 /// ```
@@ -75,7 +75,7 @@ pub fn encode(input: &[u8]) -> Term {
 #[cfg(test)]
 mod test {
     use super::*;
-    use binary_encoding::from_binary;
+    use binary_encoding::from_bits;
 
     #[test]
     fn encoding_lambda() {
@@ -89,9 +89,9 @@ mod test {
 
     #[test]
     fn decoding_lambda() {
-        let k =     from_binary(b"0000110").unwrap();
-        let s =     from_binary(b"00000001011110100111010").unwrap();
-        let quine = from_binary(b"000101100100011010000000000001011\
+        let k =     from_bits(b"0000110").unwrap();
+        let s =     from_bits(b"00000001011110100111010").unwrap();
+        let quine = from_bits(b"000101100100011010000000000001011\
                                   011110010111100111111011111011010").unwrap();
 
         assert_eq!(decode(k).unwrap(),     "(λλ2)");
