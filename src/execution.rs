@@ -25,6 +25,7 @@ pub enum Input<'a> {
 }
 
 /// Executes a binary lambda calculus program, optionally feeding it the given argument.
+/// More programs can be found in the `tests` directory.
 ///
 /// # Example
 /// ```
@@ -56,105 +57,12 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
     decode(calculation).or(Err(InvalidProgram))
 }
 
+/*
 #[cfg(test)]
 mod test {
     use super::*;
     use encoding::binary::{decompress, to_bits};
-    use lambda_calculus::data::num::church::{is_zero, rem};
 
-    #[test]
-    fn id() {
-        let id_compressed = b" ";
-        let id_blc        = decompress(&*id_compressed);
-        let input         = b"herp derp";
-
-        assert_eq!(run(&*id_blc, Input::Bytes(&*input)).unwrap(), "herp derp".to_owned());
-    }
-
-    #[test]
-    fn sort() {
-        let sort_compressed =
-            [0x15, 0x46, 0x84, 0x06, 0x05, 0x46, 0x81, 0x60, 0x15, 0xfb, 0xec, 0x2f, 0x80, 0x01,
-             0x5b, 0xf9, 0x7f, 0x0b, 0x7e, 0xf7, 0x2f, 0xec, 0x2d, 0xfb, 0x80, 0x56, 0x05, 0xfd,
-             0x85, 0xbb, 0x76, 0x11, 0x5d, 0x50, 0x5c, 0x00, 0xbe, 0x7f, 0xc1, 0x2b, 0xff, 0x0f,
-             0xfc, 0x2c, 0x1b, 0x72, 0xbf, 0xf0, 0xff, 0xc2, 0xc1, 0x6d, 0x34, 0x50, 0x40];
-
-        let sort_blc = decompress(&sort_compressed);
-        let input  = b"3241";
-
-        assert_eq!(run(&*sort_blc, Input::Bytes(&*input)).unwrap(), "1234".to_owned());
-    }
-
-    #[test]
-    fn quine() {
-        // program code from https://tromp.github.io/cl/Binary_lambda_calculus.html#A_quine
-        let quine_blc = b"000101100100011010000000000001011\
-            011110010111100111111011111011010";
-        let input = b"hurr";
-
-        assert_eq!(run(&quine_blc[..], Input::Bytes(&*input)).unwrap(), "hurrhurr");
-    }
-
-    #[test]
-    fn inflating() {
-        // program code from http://www.ioccc.org/2012/tromp/inflate.Blc
-        let inflate_compressed =
-            [0x44, 0x44, 0x68, 0x16, 0x01, 0x79, 0x1a, 0x00, 0x16, 0x7f, 0xfb, 0xcb, 0xcf, 0xdf,
-             0x65, 0xfb, 0xed, 0x0f, 0x3c, 0xe7, 0x3c, 0xf3, 0xc2, 0xd8, 0x20, 0x58, 0x2c, 0x0b,
-             0x06, 0xc0];
-
-        let inflate_blc = decompress(&inflate_compressed);
-        let s_compressed = [0x1, 0x7a, 0x74];
-
-        assert_eq!(run(&*inflate_blc, Input::Bytes(&s_compressed)).unwrap(), "000000010111101001110100".to_owned());
-    }
-
-    #[test]
-    fn deflating() {
-        // program code from http://www.ioccc.org/2012/tromp/deflate.Blc
-        let deflate_compressed =
-            [0x44, 0x68, 0x16, 0x05, 0x7e, 0x01, 0x17, 0x00, 0xbe, 0x55, 0xff, 0xf0, 0x0d, 0xc1,
-             0x8b, 0xb2, 0xc1, 0xb0, 0xf8, 0x7c, 0x2d, 0xd8, 0x05, 0x9e, 0x09, 0x7f, 0xbf, 0xb1,
-             0x48, 0x39, 0xce, 0x81, 0xce, 0x80];
-
-        let deflate_blc = decompress(&deflate_compressed);
-        let s_blc = b"00000001011110100111010";
-
-        assert_eq!(run(&*deflate_blc, Input::Bytes(&*s_blc)).unwrap().as_bytes(), [0x1, 0x7a, 0x74]);
-    }
-
-    #[test]
-    fn fizz_buzz() {
-        let fizzbuzz_single =
-            abs(
-                app!(
-                    is_zero(),
-                    app!(rem(), Var(1), 15.into_church()),
-                    encode(&*b"FizzBuzz"),
-                    app!(
-                        is_zero(),
-                        app!(rem(), Var(1), 3.into_church()),
-                        encode(&*b"Fizz"),
-                        app!(
-                            is_zero(),
-                            app!(rem(), Var(1), 5.into_church()),
-                            encode(&*b"Buzz"),
-                            Var(1)
-                        )
-                    )
-                )
-            );
-        let fizzbuzz_blc = to_bits(&fizzbuzz_single);
-
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&1.into_church()))).unwrap(),  "(λλ21)");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&2.into_church()))).unwrap(),  "(λλ2(21))");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&3.into_church()))).unwrap(),  "Fizz");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&4.into_church()))).unwrap(),  "(λλ2(2(2(21))))");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&5.into_church()))).unwrap(),  "Buzz");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_bits(&15.into_church()))).unwrap(), "FizzBuzz");
-    }
-
-/*
     #[test] /* WIP; this one parses properly, but doesn't return the expected result */
     fn hilbert() {
         // program code from http://www.ioccc.org/2012/tromp/hilbert.Blc
@@ -197,5 +105,5 @@ mod test {
 
         assert_eq!(run(&bf_interpreter_blc, Bytes(&bf_hello[..])), Ok("Hello World!".into()));
     }
-*/
 }
+*/
