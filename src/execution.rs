@@ -19,7 +19,7 @@ pub enum Input<'a> {
     /// no input parameter
     Nothing,
     /// BLC input
-    Binary(&'a [u8]),
+    Bits(&'a [u8]),
     /// unencoded byte input
     Bytes(&'a [u8])
 }
@@ -43,7 +43,7 @@ pub fn run(blc_program: &[u8], input: Input) -> Result<String, Error> {
     let calculation = match input {
         Input::Nothing     => beta(program, NOR, 0),
         Input::Bytes(arg)  => beta(app(program, encode(arg)), NOR, 0),
-        Input::Binary(arg) => {
+        Input::Bits(arg) => {
             let arg = from_binary(arg);
             if arg.is_ok() {
                 beta(app(program, arg.unwrap()), NOR, 0) // safe
@@ -146,12 +146,12 @@ mod test {
             );
         let fizzbuzz_blc = to_binary(&fizzbuzz_single);
 
-        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&1.into_church()))).unwrap(),  "(λλ21)");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&2.into_church()))).unwrap(),  "(λλ2(21))");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&3.into_church()))).unwrap(),  "Fizz");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&4.into_church()))).unwrap(),  "(λλ2(2(2(21))))");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&5.into_church()))).unwrap(),  "Buzz");
-        assert_eq!(run(&*fizzbuzz_blc, Input::Binary(&to_binary(&15.into_church()))).unwrap(), "FizzBuzz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&1.into_church()))).unwrap(),  "(λλ21)");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&2.into_church()))).unwrap(),  "(λλ2(21))");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&3.into_church()))).unwrap(),  "Fizz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&4.into_church()))).unwrap(),  "(λλ2(2(2(21))))");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&5.into_church()))).unwrap(),  "Buzz");
+        assert_eq!(run(&*fizzbuzz_blc, Input::Bits(&to_binary(&15.into_church()))).unwrap(), "FizzBuzz");
     }
 
 /*
