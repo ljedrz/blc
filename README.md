@@ -46,17 +46,24 @@ Example: BLC-encoding steps for a byte representing the ASCII/UTF-8 encoded lett
 
 ```
 extern crate blc;
+extern crate lambda_calculus;
 
 use blc::*;
-use blc::encoding::binary::decompress;
+use blc::encoding::binary::to_bits;
 use blc::execution::Input;
+use lambda_calculus::{parse, DeBruijn};
 
-fn repeat() {
-    let code_compressed = [0x16, 0x46, 0x80, 0x05, 0xbc, 0xbc, 0xfd, 0xf6, 0x80];
-    let code_blc        = decompress(&code_compressed);
+fn repeat(input: &[u8]) -> String {
+    let code_lambda = "λ1((λ11)(λλλλλ14(3(55)2)))1"; // the program (a lambda expression)
+    let code_term   = parse(code_lambda, DeBruijn).unwrap();
+    let code_blc    = to_bits(&code_term); // the program in binary lambda calculus
 
+    run(&*code_blc, Input::Bytes(input)).unwrap()
+}
+
+fn main() {
     assert_eq!(
-        run(&*code_blc, Input::Bytes(&*b"hurr")).unwrap(),
+        repeat(&*b"hurr"),
         "hurrhurr"
     );
 }
