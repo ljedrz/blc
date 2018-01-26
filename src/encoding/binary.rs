@@ -1,4 +1,4 @@
-//! Binary lambda encoding (blc)
+//! Binary encoding for lambda `Term`s
 
 use lambda_calculus::term::*;
 use self::Error::*;
