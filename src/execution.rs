@@ -92,7 +92,7 @@ mod test {
             011110010111100111111011111011010";
         let input = b"hurr";
 
-        assert_eq!(run(&quine_blc[..], Input::Bytes(&input[..])), Ok("hurrhurr".to_owned()));
+        assert_eq!(run(&quine_blc[..], Input::Bytes(&*input)).unwrap(), "hurrhurr");
     }
 
     #[test]
@@ -106,7 +106,7 @@ mod test {
         let inflate_blc = decompress(&inflate_compressed);
         let s_compressed = [0x1, 0x7a, 0x74];
 
-        assert_eq!(run(&*inflate_blc, Input::Bytes(&s_compressed[..])).unwrap(), "000000010111101001110100".to_owned());
+        assert_eq!(run(&*inflate_blc, Input::Bytes(&s_compressed)).unwrap(), "000000010111101001110100".to_owned());
     }
 
     #[test]
@@ -120,7 +120,7 @@ mod test {
         let deflate_blc = decompress(&deflate_compressed);
         let s_blc = b"00000001011110100111010";
 
-        assert_eq!(run(&*deflate_blc, Input::Bytes(&s_blc[..])).unwrap().as_bytes(), [0x1, 0x7a, 0x74]);
+        assert_eq!(run(&*deflate_blc, Input::Bytes(&*s_blc)).unwrap().as_bytes(), [0x1, 0x7a, 0x74]);
     }
 
     #[test]
@@ -130,15 +130,15 @@ mod test {
                 app!(
                     is_zero(),
                     app!(rem(), Var(1), 15.into_church()),
-                    encode(&b"FizzBuzz"[..]),
+                    encode(&*b"FizzBuzz"),
                     app!(
                         is_zero(),
                         app!(rem(), Var(1), 3.into_church()),
-                        encode(&b"Fizz"[..]),
+                        encode(&*b"Fizz"),
                         app!(
                             is_zero(),
                             app!(rem(), Var(1), 5.into_church()),
-                            encode(&b"Buzz"[..]),
+                            encode(&*b"Buzz"),
                             Var(1)
                         )
                     )
