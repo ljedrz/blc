@@ -4,6 +4,8 @@ use lambda_calculus::*;
 use encoding::binary::from_bits;
 use encoding::lambda::{encode, decode};
 use self::Error::*;
+use std::mem;
+use std::collections::VecDeque;
 
 /// An error that can occur during BLC execution.
 #[derive(Debug, PartialEq)]
@@ -22,6 +24,66 @@ pub enum Input<'a> {
     Bits(&'a [u8]),
     /// unencoded byte input
     Bytes(&'a [u8])
+}
+
+#[derive(Debug, Clone)]
+struct Env(VecDeque<Closure>);
+
+type Closure = (Term, Env);
+
+type Stack = Env;
+
+#[derive(Debug)]
+struct State {
+    term: Term,
+    stack: Stack,
+    env: Env
+}
+
+impl State {
+    pub fn new(term: Term) -> Self {
+        State {
+            term:  term,
+            stack: Env(VecDeque::new()),
+            env:   Env(VecDeque::new())
+        }
+    }
+
+    pub fn process(mut self) -> Self {
+        let tmp = mem::replace(&mut self.term, Var(0));
+
+        match tmp {
+            App(lhs, rhs) => {
+                self.stack.0.push_front((*rhs, self.env.clone()));
+                mem::replace(&mut self.term, *lhs);
+            },
+            Abs(abs) => {
+                mem::replace(&mut self.term, *abs);
+                if let Some(t) = self.stack.0.pop_front() {
+                    self.env.0.push_front(t)
+                } else {
+                    return self
+                }
+            },
+            Var(1) => {
+                if let Some((t, e)) = self.env.0.pop_front() {
+                    self.term = t;
+                    self.env = e;
+                } else {
+                    return self
+                }
+            },
+            Var(n) => {
+                if self.env.0.pop_front().is_some() {
+                    mem::replace(&mut self.term, Var(n - 1));
+                } else {
+                    return self
+                }
+            }
+        }
+
+        self.process()
+    }
 }
 
 /// Executes a binary lambda calculus program, optionally feeding it the given argument.
