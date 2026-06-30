@@ -9,6 +9,8 @@ readme = "README.md"
 license = "CC0-1.0"
 keywords = ["lambda", "calculus", "church", "functional", "binary"]
 categories = ["encoding"]
+edition = "2024"
+rust-version = "1.88"
 
 [dependencies]
-lambda_calculus = "^2.0"
+lambda_calculus = "3.5"

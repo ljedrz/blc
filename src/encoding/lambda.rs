@@ -1,10 +1,10 @@
 //! Lambda encoding for strings of bytes
 
+use crate::encoding::binary::Error;
+use crate::pair_list::*;
+use lambda_calculus::data::boolean::{fls, tru};
 use lambda_calculus::term::*;
-use lambda_calculus::data::boolean::{tru, fls};
-use encoding::binary::Error;
 use std::char;
-use pair_list::*;
 
 /// Decode lambda-encoded data as a `String`.
 ///
@@ -20,7 +20,8 @@ use pair_list::*;
 pub fn decode(term: Term) -> Result<String, Error> {
     if term == fls() {
         Ok("".into())
-    } else if is_list(&term) && is_list(head_ref(&term).unwrap()) { // safe
+    } else if is_list(&term) && is_list(head_ref(&term).unwrap()) {
+        // safe
         let (head, tail) = uncons(term).unwrap(); // safe
         let byte = decode_byte(head)?;
         let chr = char::from(byte);
@@ -41,7 +42,10 @@ fn decode_byte(encoded_byte: Term) -> Result<u8, Error> {
         .collect::<Result<Vec<usize>, TermError>>();
 
     if let Ok(indices) = indices {
-        Ok(!indices.into_iter().map(|b| (b - 1) as u8).fold(0, |acc, b| acc * 2 + b))
+        Ok(!indices
+            .into_iter()
+            .map(|b| (b - 1) as u8)
+            .fold(0, |acc, b| acc * 2 + b))
     } else {
         Err(Error::NotATerm)
     }
@@ -50,14 +54,18 @@ fn decode_byte(encoded_byte: Term) -> Result<u8, Error> {
 fn encode_byte(byte: u8) -> Term {
     let bitstr = format!("{:08b}", byte);
     let bits = bitstr.as_bytes();
-    listify_terms(bits.into_iter().map(|&bit| encode_bit(bit)).collect::<Vec<Term>>())
+    listify_terms(
+        bits.iter()
+            .map(|&bit| encode_bit(bit))
+            .collect::<Vec<Term>>(),
+    )
 }
 
 fn encode_bit(bit: u8) -> Term {
     match bit {
         b'0' => tru(),
         b'1' => fls(),
-        _ => unreachable!()
+        _ => unreachable!(),
     }
 }
 
@@ -73,13 +81,13 @@ fn encode_bit(bit: u8) -> Term {
 /// );
 /// ```
 pub fn encode(input: &[u8]) -> Term {
-    listify_terms(input.into_iter().map(|&b| encode_byte(b)).collect::<Vec<Term>>())
+    listify_terms(input.iter().map(|&b| encode_byte(b)).collect::<Vec<Term>>())
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use encoding::binary::from_bits;
+    use crate::encoding::binary::from_bits;
 
     #[test]
     fn encoding_lambda() {
@@ -101,21 +109,27 @@ mod test {
 
     #[test]
     fn decoding_lambda() {
-        let k =     from_bits(b"0000110").unwrap();
-        let s =     from_bits(b"00000001011110100111010").unwrap();
-        let quine = from_bits(b"000101100100011010000000000001011\
-                                  011110010111100111111011111011010").unwrap();
+        let k = from_bits(b"0000110").unwrap();
+        let s = from_bits(b"00000001011110100111010").unwrap();
+        let quine = from_bits(
+            b"000101100100011010000000000001011\
+                                  011110010111100111111011111011010",
+        )
+        .unwrap();
 
-        assert_eq!(decode(k).unwrap(),     "(λλ2)");
-        assert_eq!(decode(s).unwrap(),     "(λλλ31(21))");
+        assert_eq!(decode(k).unwrap(), "(λλ2)");
+        assert_eq!(decode(s).unwrap(), "(λλλ31(21))");
         assert_eq!(decode(quine).unwrap(), "(λ1((λ11)(λλλλλ14(3(55)2)))1)");
     }
 
     #[test]
     fn decode_encode_lambda() {
-        assert_eq!(decode(encode(b"herp derp")).unwrap(),             "herp derp");
-        assert_eq!(decode(encode(b"0111010101011")).unwrap(),         "0111010101011");
-        assert_eq!(decode(encode(b"01zeros110and1ones101")).unwrap(), "01zeros110and1ones101");
-        assert_eq!(decode(encode(b"\0(1)")).unwrap(),                 "\0(1)");
+        assert_eq!(decode(encode(b"herp derp")).unwrap(), "herp derp");
+        assert_eq!(decode(encode(b"0111010101011")).unwrap(), "0111010101011");
+        assert_eq!(
+            decode(encode(b"01zeros110and1ones101")).unwrap(),
+            "01zeros110and1ones101"
+        );
+        assert_eq!(decode(encode(b"\0(1)")).unwrap(), "\0(1)");
     }
 }

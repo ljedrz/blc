@@ -1,18 +1,22 @@
-use lambda_calculus::*;
-use lambda_calculus::data::boolean::fls;
-use std::mem;
 use self::ListError::*;
+use lambda_calculus::data::boolean::fls;
+use lambda_calculus::*;
+use std::mem;
 
 #[derive(Debug, PartialEq)]
 pub enum ListError {
-    NotAList
+    NotAList,
 }
 
 pub fn uncons(term: Term) -> Result<(Term, Term), ListError> {
     if !is_list(&term) {
         Err(NotAList)
     } else {
-        let candidate = if let Abs(abstracted) = term { *abstracted } else { term };
+        let candidate = if let Abs(abstracted) = term {
+            *abstracted
+        } else {
+            term
+        };
 
         if let Ok((wrapped_a, b)) = candidate.unapp() {
             if wrapped_a.rhs_ref().is_err() {
@@ -27,7 +31,11 @@ pub fn uncons(term: Term) -> Result<(Term, Term), ListError> {
 }
 
 pub fn uncons_ref(term: &Term) -> Result<(&Term, &Term), ListError> {
-    let candidate = if let Abs(ref abstracted) = *term { abstracted } else { term };
+    let candidate = if let Abs(ref abstracted) = *term {
+        abstracted
+    } else {
+        term
+    };
 
     if let Ok((wrapped_a, b)) = candidate.unapp_ref() {
         if wrapped_a.rhs_ref().is_err() {
@@ -41,7 +49,11 @@ pub fn uncons_ref(term: &Term) -> Result<(&Term, &Term), ListError> {
 }
 
 pub fn uncons_mut(term: &mut Term) -> Result<(&Term, &Term), ListError> {
-    let candidate = if let Abs(ref mut abstracted) = *term { abstracted } else { term };
+    let candidate = if let Abs(ref mut abstracted) = *term {
+        abstracted
+    } else {
+        term
+    };
 
     if let Ok((wrapped_a, b)) = candidate.unapp_mut() {
         if wrapped_a.rhs_ref().is_err() {
@@ -55,7 +67,11 @@ pub fn uncons_mut(term: &mut Term) -> Result<(&Term, &Term), ListError> {
 }
 
 pub fn unpair_ref(term: &Term) -> Result<(&Term, &Term), ListError> {
-    let candidate = if let Abs(ref abstracted) = *term { abstracted } else { term };
+    let candidate = if let Abs(ref abstracted) = *term {
+        abstracted
+    } else {
+        term
+    };
 
     if let Ok((wrapped_a, b)) = candidate.unapp_ref() {
         if wrapped_a.rhs_ref().is_err() {
@@ -77,7 +93,9 @@ pub fn snd_ref(term: &Term) -> Result<&Term, ListError> {
 }
 
 pub fn last_ref(term: &Term) -> Result<&Term, ListError> {
-    if !is_pair(term) { return Err(NotAList) }
+    if !is_pair(term) {
+        return Err(NotAList);
+    }
 
     let mut last_candidate = snd_ref(term)?;
 
@@ -101,7 +119,9 @@ pub fn tail(term: Term) -> Result<Term, ListError> {
 }
 
 pub fn push(list: Term, term: Term) -> Result<Term, ListError> {
-    if !is_list(&list) && list != fls() { return Err(NotAList) }
+    if !is_list(&list) && list != fls() {
+        return Err(NotAList);
+    }
 
     Ok(abs(app!(Var(1), term, list)))
 }
@@ -109,7 +129,7 @@ pub fn push(list: Term, term: Term) -> Result<Term, ListError> {
 pub fn pop(term: &mut Term) -> Result<Term, ListError> {
     let mut to_uncons = mem::replace(term, Var(0)); // replace term with a dummy
     let (head, tail) = uncons_mut(&mut to_uncons)?;
-    mem::replace(term, tail.clone()); // replace term with tail
+    *term = tail.clone(); // replace term with tail
 
     Ok(head.clone())
 }
